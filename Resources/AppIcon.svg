@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#2382FA"/>
+      <stop offset=".48" stop-color="#2858DB"/>
+      <stop offset="1" stop-color="#282D99"/>
+    </linearGradient>
+    <radialGradient id="light" cx=".22" cy=".04" r=".9">
+      <stop offset="0" stop-color="#76D5FF" stop-opacity=".37"/>
+      <stop offset="1" stop-color="#76D5FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".58"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity=".04"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="90" y="99" width="844" height="844" rx="185" fill="#152564" opacity=".12"/>
+  <rect x="94" y="94" width="836" height="836" rx="182" fill="#152564" opacity=".18"/>
+  <rect x="92" y="86" width="840" height="840" rx="184" fill="url(#tile)"/>
+  <rect x="92" y="86" width="840" height="840" rx="184" fill="url(#light)"/>
+  <rect x="94" y="88" width="836" height="836" rx="182" fill="none" stroke="url(#edge)" stroke-width="4"/>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="70">
+    <path d="M724 402H300m100-100L300 402l100 100" stroke="#FFFFFF"/>
+    <path d="M300 610H724m-100-100L724 610 624 710" stroke="#D8F0FF"/>
+  </g>
+</svg>

@@ -49,7 +49,8 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             preferences.removeObject(forKey: "lastSelected")
         }
         logHistory.lines = Array((preferences.stringArray(forKey: "operationLog") ?? []).suffix(300))
-        statusItem.button?.image = NSImage(systemSymbolName: "arrow.left.arrow.right", accessibilityDescription: "App Store 账号切换")
+        statusItem.button?.image = NSImage(named: "AccountSwitchTemplate")
+        statusItem.button?.setAccessibilityLabel("App Store 账号切换")
         statusItem.button?.toolTip = "App Store 账号切换"
         statusItem.menu = menu
         menu.delegate = self
@@ -462,9 +463,10 @@ private struct AboutView: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            Image(systemName: "arrow.left.arrow.right")
-                .font(.system(size: 28, weight: .medium))
-                .foregroundStyle(.tint)
+            Image(nsImage: NSApp.applicationIconImage)
+                .resizable()
+                .interpolation(.high)
+                .frame(width: 72, height: 72)
                 .accessibilityHidden(true)
             Text(name).font(.title2.bold())
             Text("版本 \(version)").foregroundStyle(.secondary)
