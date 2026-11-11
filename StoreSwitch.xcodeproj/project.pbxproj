@@ -6,14 +6,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A7106F400001000000000001 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000001 /* App.swift */; };
+		A7106F400001000000000001 /* MenuBarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000001 /* MenuBarApp.swift */; };
 		A7106F400001000000000002 /* StoreAX.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000002 /* StoreAX.swift */; };
+		A7106F400001000000000004 /* SwitchCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000004 /* SwitchCoordinator.swift */; };
+		A7106F400001000000000005 /* AppStoreAutomation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000005 /* AppStoreAutomation.swift */; };
+		A7106F400001000000000006 /* PasswordKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000006 /* PasswordKeychain.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A7106F400002000000000001 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		A7106F400002000000000001 /* MenuBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarApp.swift; sourceTree = "<group>"; };
 		A7106F400002000000000002 /* StoreAX.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreAX.swift; sourceTree = "<group>"; };
-		A7106F400002000000000003 /* StoreSwitchDev.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StoreSwitchDev.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A7106F400002000000000003 /* StoreSwitch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StoreSwitch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A7106F400002000000000004 /* SwitchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchCoordinator.swift; sourceTree = "<group>"; };
+		A7106F400002000000000005 /* AppStoreAutomation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreAutomation.swift; sourceTree = "<group>"; };
+		A7106F400002000000000006 /* PasswordKeychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordKeychain.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -28,8 +34,11 @@
 		A7106F400003000000000002 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				A7106F400002000000000001 /* App.swift */,
+				A7106F400002000000000001 /* MenuBarApp.swift */,
 				A7106F400002000000000002 /* StoreAX.swift */,
+				A7106F400002000000000005 /* AppStoreAutomation.swift */,
+				A7106F400002000000000006 /* PasswordKeychain.swift */,
+				A7106F400002000000000004 /* SwitchCoordinator.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -37,7 +46,7 @@
 		A7106F400003000000000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A7106F400002000000000003 /* StoreSwitchDev.app */,
+				A7106F400002000000000003 /* StoreSwitch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,7 +64,7 @@
 			dependencies = ();
 			name = StoreSwitchDev;
 			productName = StoreSwitchDev;
-			productReference = A7106F400002000000000003 /* StoreSwitchDev.app */;
+			productReference = A7106F400002000000000003 /* StoreSwitch.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -90,8 +99,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A7106F400001000000000001 /* App.swift in Sources */,
+				A7106F400001000000000001 /* MenuBarApp.swift in Sources */,
 				A7106F400001000000000002 /* StoreAX.swift in Sources */,
+				A7106F400001000000000005 /* AppStoreAutomation.swift in Sources */,
+				A7106F400001000000000006 /* PasswordKeychain.swift in Sources */,
+				A7106F400001000000000004 /* SwitchCoordinator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,13 +140,14 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 9;
 				ENABLE_APP_SANDBOX = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "App Store 账号切换开发版";
-				MARKETING_VERSION = 0.2;
-				PRODUCT_BUNDLE_IDENTIFIER = local.storeswitchpoc.dev;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				INFOPLIST_KEY_CFBundleDisplayName = "StoreSwitch";
+				INFOPLIST_KEY_LSUIElement = YES;
+				MARKETING_VERSION = 0.5.3;
+				PRODUCT_BUNDLE_IDENTIFIER = local.storeswitch;
+				PRODUCT_NAME = StoreSwitch;
 			};
 			name = Debug;
 		};
@@ -143,13 +156,14 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 9;
 				ENABLE_APP_SANDBOX = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "App Store 账号切换开发版";
-				MARKETING_VERSION = 0.2;
-				PRODUCT_BUNDLE_IDENTIFIER = local.storeswitchpoc.dev;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				INFOPLIST_KEY_CFBundleDisplayName = "StoreSwitch";
+				INFOPLIST_KEY_LSUIElement = YES;
+				MARKETING_VERSION = 0.5.3;
+				PRODUCT_BUNDLE_IDENTIFIER = local.storeswitch;
+				PRODUCT_NAME = StoreSwitch;
 			};
 			name = Release;
 		};

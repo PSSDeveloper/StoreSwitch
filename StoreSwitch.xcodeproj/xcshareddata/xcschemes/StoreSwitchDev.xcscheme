@@ -11,7 +11,7 @@
             <BuildableReference
                BuildableIdentifier="primary"
                BlueprintIdentifier="A7106F400004000000000001"
-               BuildableName="StoreSwitchDev.app"
+               BuildableName="StoreSwitch.app"
                BlueprintName="StoreSwitchDev"
                ReferencedContainer="container:StoreSwitch.xcodeproj">
             </BuildableReference>
@@ -31,7 +31,7 @@
          <BuildableReference
             BuildableIdentifier="primary"
             BlueprintIdentifier="A7106F400004000000000001"
-            BuildableName="StoreSwitchDev.app"
+            BuildableName="StoreSwitch.app"
             BlueprintName="StoreSwitchDev"
             ReferencedContainer="container:StoreSwitch.xcodeproj">
          </BuildableReference>

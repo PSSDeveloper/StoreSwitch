@@ -1,22 +1,41 @@
-# App Store 账号切换 POC
+# StoreSwitch · App Store 账号切换
+
+StoreSwitch 是面向个人自用的 macOS 菜单栏应用。它可保存多个 Apple Account 配置，并用系统辅助功能协助在 **App Store** 中退出和登录。各账号可以单独启用自动登录。验证码、Touch ID 和其他确认由你在 Apple 的原生界面完成。
+
+## 构建和使用
+
+1. 用 Xcode 打开 `StoreSwitch.xcodeproj`，选择 `StoreSwitchDev` 和 `My Mac`，按 ⌘R。也可在项目目录构建发布版：
+
+   ```bash
+   xcodebuild -project StoreSwitch.xcodeproj -scheme StoreSwitchDev \
+     -configuration Release -destination 'platform=macOS' \
+     -derivedDataPath .build/DerivedData build
+   ```
+
+   输出为 `.build/DerivedData/Build/Products/Release/StoreSwitch.app`。应用启动后在菜单栏显示双向箭头，Dock 中没有图标。最低系统版本为 macOS 14。
+
+2. 在菜单中打开「管理账号」，点「添加账号」填写邮箱并选择地区。不选地区时显示 🌐「未指定」，同一地区可以保存多个账号。点行末的删除按钮并保存即可移除账号。首次使用时点「辅助功能授权」，在系统设置中为当前构建的 **StoreSwitch** 开启权限。POC 的授权与此应用独立；重新构建后如果授权失效，可移除旧条目、添加当前构建，再重启应用。
+3. 如需自动登录，保存邮箱后在「管理账号」为该账号点「设置密码」，再点「存入钥匙串并启用」。密码只存于本机 macOS 钥匙串，不使用 iCloud 同步。点「移除密码」可关闭该账号的自动登录。更换邮箱或移除账号时会删除原来的钥匙串记录。
+4. 在菜单中选择目标账号。如果已有账号登录，核对目标邮箱并确认退出。启用自动登录时，StoreSwitch 会先读取钥匙串。如系统要求授权，完成后会回到 App Store 继续。本次未能读取密码时，仍可预填邮箱并手动登录。应用打开原生登录表单后，会尝试填写邮箱与密码并提交。请在 Apple 界面处理后续验证。
+5. StoreSwitch 在切换期间后台查看 App Store「商店」菜单，检测到已登录后自动恢复就绪。菜单可判断登录状态，实际邮箱和商店地区可在 App Store 内查看。随时可点「检查 App Store 登录状态」查看结果窗口，打开的操作日志会实时更新。
+
+**快捷键：**全局 `⌃⌥S` 打开 StoreSwitch 菜单，可从菜单关闭；也可点击菜单栏图标。菜单中的 `⌘1` 至 `⌘9` 对应账号列表的前九项。
+
+## 恢复和日志
+
+- 如果 App Store 刚启动，应用会短暂重读「商店」菜单；若仍读不到，可点「重新检查并继续切换」。如果退出操作已发出但结果未确认，先处理 App Store 的原生退出提示，再点「退出后继续登录准备」。
+- 如果原生登录窗口没打开，可点「重新打开原生登录」；若表单已显示但没填入邮箱，可点「重试预填已打开的表单」，或复制邮箱后手动填写。Apple 的账号选择器和独立认证界面由你在原生窗口操作。
+- 如果 Apple 的密码框不允许辅助功能填写，或表单无法确认，请在 App Store 继续。密码提交结果不确定时，先查看原生界面。恢复操作只预填邮箱。
+- StoreSwitch 的密码共用一个本机钥匙串条目。「始终允许」适用于该条目与当前受信任的应用。旧版逐账号保存的密码会在各自首次成功读取时自动迁移，迁移前 macOS 仍可能逐条询问。更换或移除密码时会清理对应旧条目。重新编译或升级临时签名版本后，macOS 也可能要求重新授权。
+- 等待人工操作时可以选择「结束本次切换」。「操作日志」保留最近 300 条，可导出。邮箱、密码和验证码不写入日志。
+
+`./check-menu.sh` 可离线检查流程安全和恢复逻辑；`./build.sh` 可构建原 POC 并运行其离线自检。真机验收时可先验证取消退出，再用测试或自有账号验证原生登录与地区。辅助功能选择器、登录窗口和商店状态以本机 App Store 显示为准。
+
+## 第一阶段 POC
 
 这是在本机运行的原生 Swift / AppKit 验证工具。它用公开的 macOS Accessibility API 检查和操作系统 App Store。测试邮箱固定为 `poc-test@example.com`，只在确认后写入，验证以原生界面显示为准。
 
-## 在 Xcode 中开发
-
-1. 用 Xcode 打开同目录的 `StoreSwitch.xcodeproj`。
-2. 选择 `StoreSwitchDev` 方案和 `My Mac`，按 ⌘R 启动开发版。
-3. 在开发版点击「请求授权」，在系统设置为 `StoreSwitchDev`（「App Store 账号切换开发版」）开启辅助功能。开发版使用独立应用标识，已有 POC 的授权不会自动转移。若重新编译后系统显示已开启、应用仍读到未授权，移除旧条目后重新添加当前构建。
-
-工程的应用目标直接编译 `Sources/App.swift` 和 `Sources/StoreAX.swift`。Debug 和 Release 均使用本地临时签名，无需配置开发者团队。原有的 `build.sh` 仍可用同一份源码单独构建 POC。可在本目录用以下命令复现 Xcode 构建：
-
-```bash
-xcodebuild -project StoreSwitch.xcodeproj -scheme StoreSwitchDev \
-  -configuration Debug -destination 'platform=macOS' \
-  -derivedDataPath .build/DerivedData build
-```
-
-## 运行与重新构建
+### 运行与重新构建
 
 在访达双击同目录的 `StoreSwitchPOC.app`。如果从 Git 检出后目录里还没有这个应用，先运行下面的构建脚本。若窗口仍运行的是先前构建，先按 ⌘Q 退出验证工具，再双击启动。
 
@@ -32,7 +51,7 @@ xcodebuild -project StoreSwitch.xcodeproj -scheme StoreSwitchDev \
 ./StoreSwitchPOC.app/Contents/MacOS/StoreSwitchPOC --self-check
 ```
 
-## 手动验证
+### 手动验证
 
 | 步骤 | 操作 | 要记录的结果 |
 |---|---|---|
@@ -44,7 +63,7 @@ xcodebuild -project StoreSwitch.xcodeproj -scheme StoreSwitchDev \
 | 6. 真实账号与状态 | 如需验证完整切换，重新打开原生登录，由你输入目标账号、密码并完成 Apple 要求的双重认证。认证完回到工具点「只读检查」。 | `Sign Out` 再次出现只说明界面疑似已登录。请在 App Store 原生账号界面人工核对目标账号或商店地区。记录通过或失败即可。 |
 | 7. 保存 | 在工具内点「保存日志…」，保存到你选择的位置。 | 日志含时间、应用环境、匹配计数和 AX 返回码。日志采用 UTC，后缀为 `Z`。测试结束可在系统设置撤销该工具的辅助功能授权。 |
 
-## 本机记录
+### 本机记录
 
 表格中的日志文件保存在本机交付目录，Git 版本仅包含下列测试摘要。
 
@@ -57,7 +76,7 @@ xcodebuild -project StoreSwitch.xcodeproj -scheme StoreSwitchDev \
 | POC 0.2 真机复测 | 授权、前台激活、两个确认框的取消路径均通过。后台读取退出项显示禁用，激活 App Store 后退出项显示可用。本轮激活后已可执行，未触发自动展开菜单的备用路径。 |
 | 真机账号流程 | 经单独确认，执行一次实际退出，菜单从「退出登录」切换为「登录」。原生登录表单载入后找到唯一可写的账号框，确认预填后在原生表单中核对了 `poc-test@example.com`，随后取消表单。App Store 保持退出状态。真实账号登录与地区核对留给用户在 Apple 界面完成。见 [Retest-0.2.log](Retest-0.2.log) 中 `04:11:23Z` 起的复测记录。 |
 
-## 如何看失败
+### 如何看失败
 
 - **开关已开启，应用仍显示未授权。** 本机出现过此现象。临时签名与具体构建绑定，同名授权项可能仍对应上一份构建。请从列表中移除旧的 `StoreSwitchPOC` 条目，用「+」添加当前的 `StoreSwitchPOC.app`，开启后重启工具，再检查授权。[Apple 代码签名与应用身份说明](https://developer.apple.com/documentation/Technotes/tn3127-inside-code-signing-requirements)
 - **没有唯一的 Store / Sign Out。** App Store 可能尚未载入、菜单尚未展开、窗口处于模态状态，或者界面文案不在已知匹配集合。可等窗口稳定后重试，记录菜单匹配数及错误码。`完整=false` 时，工具会拒绝基于该菜单退出。
@@ -68,7 +87,7 @@ xcodebuild -project StoreSwitch.xcodeproj -scheme StoreSwitchDev \
 - **预填返回成功但未显示。** 以原生界面实际显示为准。某些控件可能接受 AX 调用但不更新界面，或后续将值替换。
 - **显示已登录但身份未知。** 菜单状态只能推断会话状态。具体账号和地区请在 App Store 内核对。
 
-## 兼容性与下一步
+### 兼容性与下一步
 
 构建最低部署目标为 macOS 14.0，实机运行记录来自上表这一套系统。当前标签覆盖常见英文、简体中文、繁体中文和土耳其语拼写。匹配跟随 **App Store 界面语言**，Apple ID 注册地区不决定匹配语言。应用只使用系统 App Store 的进程和窗口，日志只包含已知标签及结构，代码不读取任何输入框的内容。退出和测试预填都需要单独确认，预填后由用户在原生界面决定下一步。
 
