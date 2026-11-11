@@ -1,0 +1,180 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A7106F400001000000000001 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000001 /* App.swift */; };
+		A7106F400001000000000002 /* StoreAX.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000002 /* StoreAX.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A7106F400002000000000001 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		A7106F400002000000000002 /* StoreAX.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreAX.swift; sourceTree = "<group>"; };
+		A7106F400002000000000003 /* StoreSwitchDev.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StoreSwitchDev.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		A7106F400003000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A7106F400003000000000002 /* Sources */,
+				A7106F400003000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A7106F400003000000000002 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A7106F400002000000000001 /* App.swift */,
+				A7106F400002000000000002 /* StoreAX.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		A7106F400003000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A7106F400002000000000003 /* StoreSwitchDev.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A7106F400004000000000001 /* StoreSwitchDev */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A7106F400008000000000002 /* Build configuration list for PBXNativeTarget "StoreSwitchDev" */;
+			buildPhases = (
+				A7106F400006000000000001 /* Sources */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = StoreSwitchDev;
+			productName = StoreSwitchDev;
+			productReference = A7106F400002000000000003 /* StoreSwitchDev.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A7106F400005000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+			};
+			buildConfigurationList = A7106F400008000000000001 /* Build configuration list for PBXProject "StoreSwitch" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				"zh-Hans",
+				en,
+				Base,
+			);
+			mainGroup = A7106F400003000000000001;
+			productRefGroup = A7106F400003000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A7106F400004000000000001 /* StoreSwitchDev */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A7106F400006000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A7106F400001000000000001 /* App.swift in Sources */,
+				A7106F400001000000000002 /* StoreAX.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A7106F400007000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A7106F400007000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A7106F400007000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "App Store 账号切换开发版";
+				MARKETING_VERSION = 0.2;
+				PRODUCT_BUNDLE_IDENTIFIER = local.storeswitchpoc.dev;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A7106F400007000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "App Store 账号切换开发版";
+				MARKETING_VERSION = 0.2;
+				PRODUCT_BUNDLE_IDENTIFIER = local.storeswitchpoc.dev;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A7106F400008000000000001 /* Build configuration list for PBXProject "StoreSwitch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A7106F400007000000000001 /* Debug */,
+				A7106F400007000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A7106F400008000000000002 /* Build configuration list for PBXNativeTarget "StoreSwitchDev" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A7106F400007000000000003 /* Debug */,
+				A7106F400007000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A7106F400005000000000001 /* Project object */;
+}

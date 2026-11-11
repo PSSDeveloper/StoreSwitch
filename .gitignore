@@ -1,0 +1,11 @@
+# macOS and personal Xcode settings
+.DS_Store
+xcuserdata/
+*.xcuserstate
+/StoreSwitch.xcodeproj/project.xcworkspace/
+
+# Local builds and test logs
+/.build/
+/DerivedData/
+/StoreSwitchPOC.app/
+*.log
