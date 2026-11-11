@@ -1,5 +1,6 @@
 import AppKit
 import ApplicationServices
+import CoreServices
 import SwiftUI
 import Carbon.HIToolbox
 
@@ -59,6 +60,12 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         updateShortcut()
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
         append(["StoreSwitch \(version) · \(ProcessInfo.processInfo.operatingSystemVersionString)"])
+        // Xcode can launch the executable directly. Refresh the app bundle's registration
+        // so macOS can look up its icon by bundle identifier.
+        let registration = LSRegisterURL(Bundle.main.bundleURL as CFURL, true)
+        if registration != noErr {
+            append(["应用包登记失败 · \(registration)"])
+        }
         if accounts.isEmpty { showAccounts() }
     }
 
@@ -225,17 +232,29 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func showPermissionGuide() {
         NSApp.activate()
+        let settingsPage = if #available(macOS 27, *) {
+            "隐私与安全 → 设备控制和数据访问"
+        } else {
+            "隐私与安全性 → 辅助功能"
+        }
         let alert = NSAlert()
+        alert.icon = NSApp.applicationIconImage
         alert.messageText = "开启辅助功能"
-        alert.informativeText = "在系统设置的「隐私与安全性 → 辅助功能」中开启 StoreSwitch。授权后回到菜单，重新选择账号或继续当前步骤。"
+        alert.informativeText = "在系统设置的「\(settingsPage)」中开启 StoreSwitch。如果旧条目仍显示默认图标，请移除该条目，再添加当前的 StoreSwitch.app。"
         alert.addButton(withTitle: "打开辅助功能设置")
         alert.addButton(withTitle: "稍后")
-        if alert.runModal() == .alertFirstButtonReturn {
+        alert.addButton(withTitle: "在访达中显示当前 App")
+        switch alert.runModal() {
+        case .alertFirstButtonReturn:
             _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
             if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
                 NSWorkspace.shared.open(url)
             }
             append(["用户打开辅助功能设置"])
+        case .alertThirdButtonReturn:
+            NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
+        default:
+            break
         }
     }
 
