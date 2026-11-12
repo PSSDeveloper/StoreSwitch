@@ -1,0 +1,3734 @@
+{
+  "sourceLanguage": "zh-Hans",
+  "strings": {
+    "about.description": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch App Store accounts from the macOS menu bar."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 macOS 菜单栏快速切换 App Store 账号。"
+          }
+        }
+      }
+    },
+    "about.version": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "版本 %@"
+          }
+        }
+      }
+    },
+    "accounts.accountRegion": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account Region"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账号地区"
+          }
+        }
+      }
+    },
+    "accounts.add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Account"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加账号"
+          }
+        }
+      }
+    },
+    "accounts.autoSignIn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto Sign-In"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动登录"
+          }
+        }
+      }
+    },
+    "accounts.autoSignInHint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save the email address to set up auto sign-in."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存邮箱后可设置自动登录。"
+          }
+        }
+      }
+    },
+    "accounts.changePassword": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Password…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更改密码…"
+          }
+        }
+      }
+    },
+    "accounts.delete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Account"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除账号"
+          }
+        }
+      }
+    },
+    "accounts.deleteHint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete account when you save"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存时删除账号"
+          }
+        }
+      }
+    },
+    "accounts.email": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Account Email"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Account 邮箱"
+          }
+        }
+      }
+    },
+    "accounts.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Accounts Yet"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没有账号"
+          }
+        }
+      }
+    },
+    "accounts.emptyDetails": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click Add Account to enter an Apple Account email address."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点「添加账号」填写 Apple Account 邮箱。"
+          }
+        }
+      }
+    },
+    "accounts.invalidEmail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a valid email address."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入有效的账号邮箱。"
+          }
+        }
+      }
+    },
+    "accounts.list": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accounts"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账号列表"
+          }
+        }
+      }
+    },
+    "accounts.region": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Region"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "地区"
+          }
+        }
+      }
+    },
+    "accounts.removePassword": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Password"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除密码"
+          }
+        }
+      }
+    },
+    "accounts.savingPassword": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving password…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在保存密码…"
+          }
+        }
+      }
+    },
+    "accounts.setPassword": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Password…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置密码…"
+          }
+        }
+      }
+    },
+    "app.statusItem": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store Account Switcher"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store 账号切换"
+          }
+        }
+      }
+    },
+    "common.cancel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消"
+          }
+        }
+      }
+    },
+    "common.close": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭"
+          }
+        }
+      }
+    },
+    "common.done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完成"
+          }
+        }
+      }
+    },
+    "common.later": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍后"
+          }
+        }
+      }
+    },
+    "common.ok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好"
+          }
+        }
+      }
+    },
+    "common.reopen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reopen"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新打开"
+          }
+        }
+      }
+    },
+    "common.save": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存"
+          }
+        }
+      }
+    },
+    "common.unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未知"
+          }
+        }
+      }
+    },
+    "common.viewLogAndRetry": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the StoreSwitch log, then try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请查看 StoreSwitch 的操作日志后重试。"
+          }
+        }
+      }
+    },
+    "error.busy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StoreSwitch is working with the App Store. Try again shortly."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在处理 App Store，请稍后再试。"
+          }
+        }
+      }
+    },
+    "error.notFrontmost": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bring the App Store to the front, then try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store 未能成为前台，请打开它后重试。"
+          }
+        }
+      }
+    },
+    "error.operationFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the App Store and try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "操作未能完成，请在 App Store 检查后重试。"
+          }
+        }
+      }
+    },
+    "error.permission": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grant Accessibility access in System Settings, then continue."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在系统设置开启辅助功能，再继续。"
+          }
+        }
+      }
+    },
+    "error.processChanged": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The App Store restarted. Check its window before continuing."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store 已重新启动，请检查原生界面后继续。"
+          }
+        }
+      }
+    },
+    "error.storeUnavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The App Store could not be opened or read."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "系统 App Store 未打开或无法读取。"
+          }
+        }
+      }
+    },
+    "guidance.filled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StoreSwitch tried to fill in the email address. Verify it, then sign in to the App Store."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已尝试预填邮箱。请核对后在 App Store 登录。"
+          }
+        }
+      }
+    },
+    "guidance.finishSignOut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Respond to the App Store’s sign-out prompt or sign out manually before continuing."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请处理 App Store 的退出提示，或手动退出后再继续。"
+          }
+        }
+      }
+    },
+    "guidance.initialCheck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wait for the App Store to load, then check again to continue."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等 App Store 加载后，可以重新检查并继续。"
+          }
+        }
+      }
+    },
+    "guidance.keychain": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If macOS requests Keychain access, approve it in the system prompt."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如果 macOS 请求访问钥匙串，请在系统提示中确认。"
+          }
+        }
+      }
+    },
+    "guidance.openSignIn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Apple’s sign-in form, or check your sign-in status once you’re done."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请打开 Apple 的登录表单，或在完成登录后检查状态。"
+          }
+        }
+      }
+    },
+    "guidance.signOutUnconfirmed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-out hasn’t been detected yet. Check the App Store before continuing."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未检测到退出。请在 App Store 检查退出状态后再继续。"
+          }
+        }
+      }
+    },
+    "guidance.submissionUncertain": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the App Store to see if sign-in was submitted and complete any Apple verification."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在 App Store 查看登录是否已提交，并完成 Apple 要求的验证。"
+          }
+        }
+      }
+    },
+    "guidance.submitted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in was submitted. Complete any Apple verification in the App Store."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已提交登录。如有 Apple 验证提示，请在 App Store 完成。"
+          }
+        }
+      }
+    },
+    "guidance.writeUncertain": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StoreSwitch couldn’t confirm that the email address was filled. Check it in the App Store before signing in."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未确认邮箱是否填入。请在 App Store 核对后登录。"
+          }
+        }
+      }
+    },
+    "keychain.authCancelled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keychain access was canceled. Try again and approve the macOS prompt."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已取消系统钥匙串授权。重试时请在 macOS 提示中确认。"
+          }
+        }
+      }
+    },
+    "keychain.authDenied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock your login keychain and allow StoreSwitch access in the macOS prompt."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 未授权此次操作。请确认登录钥匙串已解锁，并在系统提示中允许 StoreSwitch 访问。"
+          }
+        }
+      }
+    },
+    "keychain.decodeFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t read the password record in the keychain. Check the StoreSwitch log."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取钥匙串中的密码记录。可查看 StoreSwitch 的操作日志。"
+          }
+        }
+      }
+    },
+    "keychain.emptyPassword": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a password to save it."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码留空时不会保存。"
+          }
+        }
+      }
+    },
+    "keychain.enable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save to Keychain and Enable"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "存入钥匙串并启用"
+          }
+        }
+      }
+    },
+    "keychain.enterPassword": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a Password"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入密码"
+          }
+        }
+      }
+    },
+    "keychain.operation.add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add password record"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增密码记录"
+          }
+        }
+      }
+    },
+    "keychain.operation.checkSignature": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the running app’s signature"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "检查正在运行的应用签名"
+          }
+        }
+      }
+    },
+    "keychain.operation.decodeLegacy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decode legacy password"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解码旧密码"
+          }
+        }
+      }
+    },
+    "keychain.operation.decodeVault": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decode password vault"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解码密码库"
+          }
+        }
+      }
+    },
+    "keychain.operation.findLegacy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find legacy password"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查找旧密码"
+          }
+        }
+      }
+    },
+    "keychain.operation.readData": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read password data"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "读取密码数据"
+          }
+        }
+      }
+    },
+    "keychain.operation.readRecord": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read password record"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "读取密码记录"
+          }
+        }
+      }
+    },
+    "keychain.operation.remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove password record"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除密码记录"
+          }
+        }
+      }
+    },
+    "keychain.operation.update": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update password record"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新密码记录"
+          }
+        }
+      }
+    },
+    "keychain.operationFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The keychain operation failed (%d). Check the StoreSwitch log."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "钥匙串操作失败（%d）。可查看 StoreSwitch 的操作日志。"
+          }
+        }
+      }
+    },
+    "keychain.password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Account Password"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Account 密码"
+          }
+        }
+      }
+    },
+    "keychain.removeFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t Remove Password"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法移除账号密码"
+          }
+        }
+      }
+    },
+    "keychain.reopen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reopen StoreSwitch"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要重新打开 StoreSwitch"
+          }
+        }
+      }
+    },
+    "keychain.reopenDetails": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StoreSwitch has been updated on disk. Reopen the app before accessing the keychain. You’ll need to reenter any unsaved account changes."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "磁盘上的 StoreSwitch 已更新。请重新打开应用，再访问钥匙串。账号列表中未保存的修改需要重新填写。"
+          }
+        }
+      }
+    },
+    "keychain.reopenFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t Reopen StoreSwitch"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法重新打开 StoreSwitch"
+          }
+        }
+      }
+    },
+    "keychain.reopenFailedDetails": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When the build finishes, quit StoreSwitch and open the new build in Finder."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在构建完成后退出 StoreSwitch，再从访达打开新构建。"
+          }
+        }
+      }
+    },
+    "keychain.saveFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t Save Password"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法保存密码"
+          }
+        }
+      }
+    },
+    "keychain.setup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Auto Sign-In Password"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置自动登录密码"
+          }
+        }
+      }
+    },
+    "keychain.setupDetails": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account: %@\nYour password is stored in the local keychain. When you choose this account from the menu, StoreSwitch will try to sign in to the App Store."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账号：%@\n密码仅存于本机钥匙串。以后从菜单选择此账号时，StoreSwitch 会尝试在系统 App Store 中提交登录。"
+          }
+        }
+      }
+    },
+    "keychain.unavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS can’t access the default keychain. Check your login keychain in Keychain Access, then try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 无法访问默认钥匙串。请在「钥匙串访问」中确认登录钥匙串可用后重试。"
+          }
+        }
+      }
+    },
+    "log.axActionUnconfirmed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The App Store didn’t respond in time. Check whether the action took effect."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store 未及时响应。动作可能已生效，请核对界面。"
+          }
+        }
+      }
+    },
+    "log.axAlreadySignedOut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-out stopped because the menu shows “Sign In.”"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前菜单显示 Sign In，已停止退出。"
+          }
+        }
+      }
+    },
+    "log.axAuthItemCounts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign Out matches: %lld · Sign In matches: %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign Out 匹配 %lld 个 · Sign In 匹配 %lld 个"
+          }
+        }
+      }
+    },
+    "log.axCheckAfterSignOut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check after sign-out · %@. If the App Store shows a prompt, respond there and check again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退出后检查 · %@。如 App Store 显示确认框，由你在原生界面处理后重新检查。"
+          }
+        }
+      }
+    },
+    "log.axChildrenChanged": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ count changed during the read"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 数量在读取时变化"
+          }
+        }
+      }
+    },
+    "log.axChildrenLimit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ exceeded the per-level scan limit"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 超过单层扫描上限"
+          }
+        }
+      }
+    },
+    "log.axEmailFormUnconfirmed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto sign-in · Couldn’t verify Apple’s form after filling the email address"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动登录 · 无法确认已填写邮箱的原生表单"
+          }
+        }
+      }
+    },
+    "log.axEmailSubmissionUnconfirmed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto sign-in · Email submission unconfirmed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动登录 · 邮箱步骤提交结果待确认"
+          }
+        }
+      }
+    },
+    "log.axEmailSubmitted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto sign-in · Submitted the email step"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动登录 · 已提交邮箱步骤"
+          }
+        }
+      }
+    },
+    "log.axEnabledUnconfirmed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped because AXEnabled couldn’t be confirmed as true."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AXEnabled 未明确为 true，停止。"
+          }
+        }
+      }
+    },
+    "log.axExpandMenu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening the top-level Store menu and waiting for its items to update."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展开顶层 Store 菜单，等待菜单项更新。"
+          }
+        }
+      }
+    },
+    "log.axFieldChanged": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped because the text field changed or became disabled."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文本框已变化或禁用，停止。"
+          }
+        }
+      }
+    },
+    "log.axFieldWritable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AXValue writability check · %@ · settable=%@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AXValue 可写检查 · %@ · settable=%@"
+          }
+        }
+      }
+    },
+    "log.axFillManually": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t find a safe account field to fill. Continue in the App Store."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未找到可安全预填的账号输入框，请在 App Store 手动继续。"
+          }
+        }
+      }
+    },
+    "log.axForeignElement": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skipped an AX element with unknown or non–App Store ownership"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跳过非 App Store 或归属不明的 AX 元素"
+          }
+        }
+      }
+    },
+    "log.axMenuBarCounts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AXMenuBar · Top-level items: %lld · Store matches: %lld · Status unknown"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AXMenuBar · 顶层元素 %lld 个 · Store 匹配 %lld 个 · 状态未知"
+          }
+        }
+      }
+    },
+    "log.axMenuBarUnavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AXMenuBar is unreadable or its ownership is unknown."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AXMenuBar 不可读或归属不明。"
+          }
+        }
+      }
+    },
+    "log.axMenuCheckComplete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu check complete."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "菜单检查完成。"
+          }
+        }
+      }
+    },
+    "log.axMenuCounts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AXMenuBar → AXMenuBarItem[Store] · Submenus: %lld · Items: %lld · Complete=%@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AXMenuBar → AXMenuBarItem[Store] · 子菜单 %lld 个 · 条目 %lld 个 · 完整=%@"
+          }
+        }
+      }
+    },
+    "log.axMenuReadRetries": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Store menu read retries: %lld · %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "商店菜单重读 %lld 次 · %@"
+          }
+        }
+      }
+    },
+    "log.axMenuRefreshed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After refreshing the menu · %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "菜单刷新后 · %@"
+          }
+        }
+      }
+    },
+    "log.axMultipleForms": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped automatic detection because multiple native forms were found."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口存在多个原生表单，停止自动识别。"
+          }
+        }
+      }
+    },
+    "log.axNoSafeEmailField": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped because no unique Apple Account field could be identified safely."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未找到唯一且可安全识别的 Apple Account 文本框，停止。"
+          }
+        }
+      }
+    },
+    "log.axNoSafePassword": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto sign-in · Couldn’t find a writable secure password field for this account"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动登录 · 未找到可写且匹配账号的安全密码框"
+          }
+        }
+      }
+    },
+    "log.axNoUniqueEnabledItem": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t confirm a unique enabled account item after opening the menu."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展开后未确认唯一且启用的账号菜单项。"
+          }
+        }
+      }
+    },
+    "log.axOtherRole": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other role"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "其他角色"
+          }
+        }
+      }
+    },
+    "log.axPasswordSubmissionUnconfirmed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto sign-in · Password submission unconfirmed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动登录 · 密码步骤提交结果待确认"
+          }
+        }
+      }
+    },
+    "log.axPasswordSubmitted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto sign-in · Submitted the password step"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动登录 · 已提交密码步骤"
+          }
+        }
+      }
+    },
+    "log.axPasswordWrite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto sign-in · Password field write %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动登录 · 密码框写入 %@"
+          }
+        }
+      }
+    },
+    "log.axPermissionMissing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped because Accessibility access is unavailable."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "辅助功能未授权，停止。"
+          }
+        }
+      }
+    },
+    "log.axPressUnavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The element does not expose AXPress · AXCopyActionNames %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "元素未公开 AXPress · AXCopyActionNames %@"
+          }
+        }
+      }
+    },
+    "log.axReadFaults": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AX read diagnostics · %@ ×%lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AX 读取诊断 · %@ ×%lld"
+          }
+        }
+      }
+    },
+    "log.axReadOnlyComplete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read-only check complete. Verify the account in the App Store."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只读检查完成。账号身份需在 App Store 内人工核对。"
+          }
+        }
+      }
+    },
+    "log.axRoleMissing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Element is missing AXRole"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "元素缺少 AXRole"
+          }
+        }
+      }
+    },
+    "log.axRootTimeout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AX root PID=%d · Set messaging timeout %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AX root PID=%d · 消息超时设置 %@"
+          }
+        }
+      }
+    },
+    "log.axSignInAmbiguous": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t confirm a unique “Sign In” item. The sign-in window wasn’t opened."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未确认唯一的「登录」菜单项，未打开登录窗口。"
+          }
+        }
+      }
+    },
+    "log.axSignInExpandedMenu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in entry · Expanded Store menu"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录入口 · 展开后的商店菜单"
+          }
+        }
+      }
+    },
+    "log.axSignInMenu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in entry · Store menu"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录入口 · 商店菜单"
+          }
+        }
+      }
+    },
+    "log.axSignInWindow": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in entry · App Store window"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录入口 · App Store 窗口"
+          }
+        }
+      }
+    },
+    "log.axSignOutAmbiguous": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped because a unique “Sign Out” item couldn’t be confirmed."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未确认唯一的 Sign Out，停止。"
+          }
+        }
+      }
+    },
+    "log.axStoreMenuAmbiguous": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped because a unique Store menu couldn’t be found."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "缺少唯一的 Store 菜单，停止。"
+          }
+        }
+      }
+    },
+    "log.axStoreMenuTimeout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Store menu messaging timeout · %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Store 菜单消息超时设置 · %@"
+          }
+        }
+      }
+    },
+    "log.axTimeoutFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t set AX messaging timeout · %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AX 消息超时设置失败 · %@"
+          }
+        }
+      }
+    },
+    "log.axUnsafeTarget": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped because the target changed, lost focus, or lost Accessibility access."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标已变更、未在前台，或授权已撤回，停止。"
+          }
+        }
+      }
+    },
+    "log.axVerifyTestFill": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check whether %@ appears in Apple’s interface. Close or cancel to end the test."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在原生界面核对是否显示 %@。用关闭或取消结束测试。"
+          }
+        }
+      }
+    },
+    "log.axWindowCounts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Window scope · App Store AXWindows=%lld · AXSheet=%lld · Nodes scanned: %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口范围 · App Store AXWindows=%lld · AXSheet=%lld · 已扫描 %lld 节点"
+          }
+        }
+      }
+    },
+    "log.axWindowDepthLimit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Window scan reached its depth limit"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口扫描达到深度上限"
+          }
+        }
+      }
+    },
+    "log.axWindowFieldCounts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in entries: %lld · Apple Account fields: %lld · Complete=%@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录入口 %lld 个 · Apple Account 文本框 %lld 个 · 完整=%@"
+          }
+        }
+      }
+    },
+    "log.axWindowScanLimit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Window scan reached its time or node limit"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口扫描达到时间或节点上限"
+          }
+        }
+      }
+    },
+    "log.axWindowSignIn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Window Sign In"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口 Sign In"
+          }
+        }
+      }
+    },
+    "log.axWindowTree": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Window AX tree (up to 45 ordinary nodes, with matches listed separately)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口 AX 树（最多 45 个普通节点，另列已匹配节点）"
+          }
+        }
+      }
+    },
+    "log.axWindowsAmbiguous": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Window scope is ambiguous or unreadable · App Store AXWindows=%lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口范围不唯一或不可读 · App Store AXWindows=%lld"
+          }
+        }
+      }
+    },
+    "log.checkResult": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check result · %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "检查结果 · %@"
+          }
+        }
+      }
+    },
+    "log.count": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent entries: %lld · UTC"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最近 %lld 条 · UTC"
+          }
+        }
+      }
+    },
+    "log.export": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export Log…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出日志…"
+          }
+        }
+      }
+    },
+    "log.exportFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t Save Log"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法保存日志"
+          }
+        }
+      }
+    },
+    "log.exportFailedDetails": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the destination and try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查目标位置后再试。"
+          }
+        }
+      }
+    },
+    "log.keychainFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keychain · Password operation failed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "钥匙串 · 密码操作失败"
+          }
+        }
+      }
+    },
+    "log.keychainMigrationPending": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keychain · Legacy password is available. Migration is pending."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "钥匙串 · 旧密码可用，合并保存暂未完成"
+          }
+        }
+      }
+    },
+    "log.keychainOperationFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keychain · %@ failed (%d)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "钥匙串 · %@失败（%d）"
+          }
+        }
+      }
+    },
+    "log.keychainRead": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto sign-in · Read the local keychain"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动登录 · 已读取本机钥匙串"
+          }
+        }
+      }
+    },
+    "log.keychainReadFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto sign-in · Couldn’t read the local keychain. Will try filling only the email address."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动登录 · 无法读取本机钥匙串，将尝试仅预填邮箱"
+          }
+        }
+      }
+    },
+    "log.manualCheck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual App Store sign-in check"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手动检查 App Store 登录状态"
+          }
+        }
+      }
+    },
+    "log.openedAccessibilitySettings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opened accessibility settings"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用户打开辅助功能设置"
+          }
+        }
+      }
+    },
+    "log.registrationFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App registration failed · %d"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用包登记失败 · %d"
+          }
+        }
+      }
+    },
+    "log.shortcutFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t register the global menu shortcut"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全局菜单快捷键注册失败"
+          }
+        }
+      }
+    },
+    "log.state": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status · %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "状态 · %@"
+          }
+        }
+      }
+    },
+    "log.storeLaunchFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t open the system App Store"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法打开系统 App Store"
+          }
+        }
+      }
+    },
+    "log.storeNotFrontmost": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store did not come to the front"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store 未成为前台"
+          }
+        }
+      }
+    },
+    "log.switchFinished": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store sign-in detected · Switch complete"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "检测到 App Store 已登录 · 本次切换结束"
+          }
+        }
+      }
+    },
+    "log.switchStarted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch started · Region %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始切换 · 地区 %@"
+          }
+        }
+      }
+    },
+    "login.checkingStore": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking App Store…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在检查 App Store…"
+          }
+        }
+      }
+    },
+    "login.signedIn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed In"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已登录"
+          }
+        }
+      }
+    },
+    "login.signedInDetails": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed in · The Store menu shows “Sign Out”"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已登录 · 商店菜单显示「退出登录」"
+          }
+        }
+      }
+    },
+    "login.signedOut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed Out"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未登录"
+          }
+        }
+      }
+    },
+    "login.signedOutDetails": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed out · The Store menu shows “Sign In”"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未登录 · 商店菜单显示「登录」"
+          }
+        }
+      }
+    },
+    "login.unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "状态未知"
+          }
+        }
+      }
+    },
+    "login.unknownDetails": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t determine sign-in status from the Store menu"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法从商店菜单判断"
+          }
+        }
+      }
+    },
+    "menu.about": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About StoreSwitch"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关于 StoreSwitch"
+          }
+        }
+      }
+    },
+    "menu.accessibilitySetup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accessibility Setup"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "授权引导"
+          }
+        }
+      }
+    },
+    "menu.accountAddress": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@，%@"
+          }
+        }
+      }
+    },
+    "menu.addAccount": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Account…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加账号…"
+          }
+        }
+      }
+    },
+    "menu.autoSignInAccount": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · Auto Sign-In"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · 自动登录"
+          }
+        }
+      }
+    },
+    "menu.checkAgain": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check Again"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新检查"
+          }
+        }
+      }
+    },
+    "menu.checkFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last Check Failed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次检查失败"
+          }
+        }
+      }
+    },
+    "menu.checkSignIn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check Sign-In Status"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "检查登录状态"
+          }
+        }
+      }
+    },
+    "menu.continueSignIn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue Sign-In"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "继续登录"
+          }
+        }
+      }
+    },
+    "menu.copyEmail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Email Address"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复制邮箱"
+          }
+        }
+      }
+    },
+    "menu.endSwitch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End Account Switch"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结束切换"
+          }
+        }
+      }
+    },
+    "menu.grantAccessibility": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grant Accessibility Access…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开启辅助功能权限…"
+          }
+        }
+      }
+    },
+    "menu.language": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "语言"
+          }
+        }
+      }
+    },
+    "menu.lastCheck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last Check · %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次检查 · %@"
+          }
+        }
+      }
+    },
+    "menu.manageAccounts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage Accounts…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理账号…"
+          }
+        }
+      }
+    },
+    "menu.openSignIn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Sign-In Window"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开登录窗口"
+          }
+        }
+      }
+    },
+    "menu.openStore": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open App Store"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开 App Store"
+          }
+        }
+      }
+    },
+    "menu.quit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit StoreSwitch"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退出 StoreSwitch"
+          }
+        }
+      }
+    },
+    "menu.refillEmail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fill Email Again"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重填邮箱"
+          }
+        }
+      }
+    },
+    "menu.shortcut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu Shortcut (⌃⌥S)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "菜单快捷键（⌃⌥S）"
+          }
+        }
+      }
+    },
+    "menu.switchAccounts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch Accounts"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换账号"
+          }
+        }
+      }
+    },
+    "menu.switchDetails": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View Switch Details"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看切换详情"
+          }
+        }
+      }
+    },
+    "menu.target": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target · %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标 · %@"
+          }
+        }
+      }
+    },
+    "menu.viewLog": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View Log"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看日志"
+          }
+        }
+      }
+    },
+    "native.closeWindow": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close Window"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭窗口"
+          }
+        }
+      }
+    },
+    "native.copy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复制"
+          }
+        }
+      }
+    },
+    "native.cut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cut"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "剪切"
+          }
+        }
+      }
+    },
+    "native.edit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑"
+          }
+        }
+      }
+    },
+    "native.paste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "粘贴"
+          }
+        }
+      }
+    },
+    "native.selectAll": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select All"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全选"
+          }
+        }
+      }
+    },
+    "native.undo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "撤销"
+          }
+        }
+      }
+    },
+    "native.window": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Window"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口"
+          }
+        }
+      }
+    },
+    "permission.addCurrentApp": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click + in System Settings and add the StoreSwitch app you’re running."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点系统设置里的「＋」，添加当前的 StoreSwitch.app。"
+          }
+        }
+      }
+    },
+    "permission.continueCheck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue Check"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "继续检查"
+          }
+        }
+      }
+    },
+    "permission.continueSwitch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue Switching"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "继续切换"
+          }
+        }
+      }
+    },
+    "permission.enabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accessibility Access Granted"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "辅助功能已开启"
+          }
+        }
+      }
+    },
+    "permission.help": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Having trouble?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "授权遇到问题？"
+          }
+        }
+      }
+    },
+    "permission.illustration": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System Settings Preview"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "系统设置示意"
+          }
+        }
+      }
+    },
+    "permission.illustrationAX": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System Settings preview. Turn on the switch next to StoreSwitch."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "系统设置示意。打开 StoreSwitch 右侧的开关。"
+          }
+        }
+      }
+    },
+    "permission.introTitle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grant Accessibility Access"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开启辅助功能"
+          }
+        }
+      }
+    },
+    "permission.notDetected": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access Hasn’t Been Detected"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仍未检测到授权"
+          }
+        }
+      }
+    },
+    "permission.notListed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StoreSwitch Isn’t Listed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "列表中找不到 StoreSwitch"
+          }
+        }
+      }
+    },
+    "permission.openManually": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open System Settings and go to %@."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请手动打开系统设置，前往「%@」。"
+          }
+        }
+      }
+    },
+    "permission.openSettings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open System Settings"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开系统设置"
+          }
+        }
+      }
+    },
+    "permission.purpose": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StoreSwitch uses this permission to check App Store sign-in status and help you sign out and in when switching accounts."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StoreSwitch 用这项权限检查 App Store 的登录状态，\n并在你切换账号时协助退出与登录。"
+          }
+        }
+      }
+    },
+    "permission.reopenSettings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reopen System Settings"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再次打开系统设置"
+          }
+        }
+      }
+    },
+    "permission.replaceOldApp": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If the list shows an older version, remove it and add the current app. Restart StoreSwitch if needed, then check again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "若列表中是旧版本，请移除旧条目并添加当前 App。必要时重启 StoreSwitch，再检查授权。"
+          }
+        }
+      }
+    },
+    "permission.returnForCheck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return here after enabling access. StoreSwitch will check automatically."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开启后回到这里，StoreSwitch 会自动检查。"
+          }
+        }
+      }
+    },
+    "permission.revealInFinder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show in Finder"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在访达中显示"
+          }
+        }
+      }
+    },
+    "permission.scope": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS allows apps with this permission to control other apps. You can turn it off at any time in System Settings."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 会允许获授权的 App 控制其他应用。\n你可以随时在系统设置中关闭这项权限。"
+          }
+        }
+      }
+    },
+    "permission.settingsPath27": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy & Security → Device Control and Data Access"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐私与安全 → 设备控制和数据访问"
+          }
+        }
+      }
+    },
+    "permission.settingsPathLegacy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy & Security → Accessibility"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐私与安全性 → 辅助功能"
+          }
+        }
+      }
+    },
+    "permission.successCheck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can now check your App Store sign-in status."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "现在可以继续检查 App Store 的登录状态。"
+          }
+        }
+      }
+    },
+    "permission.successGeneral": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can now switch App Store accounts and check sign-in status."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "现在可以切换 App Store 账号和检查登录状态。"
+          }
+        }
+      }
+    },
+    "permission.successSwitch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can now continue switching App Store accounts."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "现在可以继续切换 App Store 账号。"
+          }
+        }
+      }
+    },
+    "permission.switchOnNoAccess": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Switch Is On, but Access Is Unavailable"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开关已开启，但仍未生效"
+          }
+        }
+      }
+    },
+    "permission.turnOn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn On StoreSwitch"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开 StoreSwitch 的开关"
+          }
+        }
+      }
+    },
+    "permission.verification": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter verification codes or use Touch ID in Apple’s interface."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "验证码和触控 ID 仍由你在 Apple 界面完成。"
+          }
+        }
+      }
+    },
+    "permission.waiting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for access…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待授权…"
+          }
+        }
+      }
+    },
+    "region.china": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "China mainland"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中国大陆"
+          }
+        }
+      }
+    },
+    "region.unspecified": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unspecified"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未指定"
+          }
+        }
+      }
+    },
+    "shortcut.conflict": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another app may be using ⌃⌥S. You can still click the StoreSwitch menu bar icon."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌃⌥S 可能已被其他应用使用。你仍可以点击菜单栏图标。"
+          }
+        }
+      }
+    },
+    "shortcut.unavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcut Unavailable"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快捷键不可用"
+          }
+        }
+      }
+    },
+    "state.cancelled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch ended"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换已结束"
+          }
+        }
+      }
+    },
+    "state.checking": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking sign-in status…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在检查登录状态…"
+          }
+        }
+      }
+    },
+    "state.confirmExit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm sign-out to continue"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待确认退出"
+          }
+        }
+      }
+    },
+    "state.finishSignIn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish signing in to the App Store"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在 App Store 完成登录"
+          }
+        }
+      }
+    },
+    "state.needsSignInCheck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check sign-in status"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要检查登录状态"
+          }
+        }
+      }
+    },
+    "state.needsSignOutCheck": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check sign-out status"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要检查退出状态"
+          }
+        }
+      }
+    },
+    "state.preparing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing sign-in…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在准备登录…"
+          }
+        }
+      }
+    },
+    "state.readingKeychain": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading Keychain…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在读取钥匙串…"
+          }
+        }
+      }
+    },
+    "state.ready": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "就绪"
+          }
+        }
+      }
+    },
+    "state.signingOut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signing out…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在退出登录…"
+          }
+        }
+      }
+    },
+    "state.submissionUnconfirmed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in submission unconfirmed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录提交待确认"
+          }
+        }
+      }
+    },
+    "state.verifyEmail": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verify your email before signing in"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请核对邮箱后登录"
+          }
+        }
+      }
+    },
+    "state.waitingForSignIn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for sign-in"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待登录完成"
+          }
+        }
+      }
+    },
+    "store.openFailed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t Open App Store"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法打开 App Store"
+          }
+        }
+      }
+    },
+    "switch.accountChanged": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account Settings Changed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账号配置已更改"
+          }
+        }
+      }
+    },
+    "switch.confirm.automatic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target: %@\n\nStoreSwitch will sign out of the current App Store account, then try to sign in with the password from your keychain. Complete any Apple verification in the App Store."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标：%@\n\nStoreSwitch 将退出当前 App Store 账号，然后尝试使用钥匙串中的密码在 App Store 提交登录。请在 App Store 完成 Apple 要求的验证。"
+          }
+        }
+      }
+    },
+    "switch.confirm.continue": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign Out and Continue"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退出并继续"
+          }
+        }
+      }
+    },
+    "switch.confirm.manual": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target: %@\n\nStoreSwitch will sign out of the current App Store account, then try to fill in the target email address. Complete any Apple verification in the App Store."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标：%@\n\nStoreSwitch 将退出当前 App Store 账号，然后尝试预填目标邮箱。请在 App Store 完成 Apple 要求的验证。"
+          }
+        }
+      }
+    },
+    "switch.confirm.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch App Store Accounts?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换 App Store 账号？"
+          }
+        }
+      }
+    },
+    "switch.selectAgain": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the account again from the menu."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在菜单中重新选择要切换的账号。"
+          }
+        }
+      }
+    },
+    "window.log": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StoreSwitch Log"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StoreSwitch 操作日志"
+          }
+        }
+      }
+    },
+    "window.loginStatus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store Sign-In Status"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store 登录状态"
+          }
+        }
+      }
+    },
+    "window.manageAccounts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage App Store Accounts"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理 App Store 账号"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

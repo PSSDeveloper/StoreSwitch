@@ -10,27 +10,31 @@ final class AppStoreAutomation: StoreAutomating {
         self.log = log
     }
 
-    func inspect(open: Bool) async throws -> StoreSnapshot {
+    func inspect(activate: Bool) async throws -> StoreSnapshot {
         try requirePermission()
-        let pid: pid_t
-        if open {
-            pid = try await openStore().processIdentifier
+        let app: NSRunningApplication
+        if activate {
+            app = try await openStore()
+        } else if let running = try runningStore() {
+            app = running
         } else {
-            pid = try runningStorePID()
+            app = try await launchStore(activate: false)
         }
+        let pid = app.processIdentifier
         let state = await scan(pid: pid) { $0.sessionState() }
         return StoreSnapshot(pid: pid, state: state)
     }
 
     func observeLogin() async throws -> StoreState {
         try requirePermission()
-        return await scan(pid: try runningStorePID(), report: false) { $0.sessionState(waitForMenu: false) }
+        guard let app = try runningStore() else { throw StoreAutomationError.unavailable }
+        return await scan(pid: app.processIdentifier, report: false) { $0.sessionState(waitForMenu: false) }
     }
 
-    private func runningStorePID() throws -> pid_t {
+    private func runningStore() throws -> NSRunningApplication? {
         let running = NSRunningApplication.runningApplications(withBundleIdentifier: storeBundleID).filter(isSystemStore)
-        guard running.count == 1, let store = running.first else { throw StoreAutomationError.unavailable }
-        return store.processIdentifier
+        guard running.count <= 1 else { throw StoreAutomationError.unavailable }
+        return running.first
     }
 
     func signOut(pid: pid_t) async throws -> StoreState {
@@ -47,7 +51,7 @@ final class AppStoreAutomation: StoreAutomating {
                 }
             }
             if result.migrationPending {
-                log(["钥匙串 · 旧密码可用，合并保存暂未完成"])
+                log([tr(.init("log.keychainMigrationPending", defaultValue: "钥匙串 · 旧密码可用，合并保存暂未完成"))])
             }
             return result.password
         } catch let failure as KeychainFailure {
@@ -75,20 +79,25 @@ final class AppStoreAutomation: StoreAutomating {
     }
 
     func openStore() async throws -> NSRunningApplication {
-        let config = NSWorkspace.OpenConfiguration()
-        config.activates = true
-        guard let app = try? await NSWorkspace.shared.openApplication(at: storeURL, configuration: config),
-              isSystemStore(app) else {
-            log(["无法打开系统 App Store"])
-            throw StoreAutomationError.unavailable
-        }
+        let app = try await launchStore(activate: true)
         for _ in 0..<16 {
             if NSWorkspace.shared.frontmostApplication?.processIdentifier == app.processIdentifier { return app }
             if app.isTerminated { break }
             try await Task.sleep(for: .milliseconds(100))
         }
-        log(["App Store 未成为前台"])
+        log([tr(.init("log.storeNotFrontmost", defaultValue: "App Store 未成为前台"))])
         throw StoreAutomationError.notFrontmost
+    }
+
+    private func launchStore(activate: Bool) async throws -> NSRunningApplication {
+        let config = NSWorkspace.OpenConfiguration()
+        config.activates = activate
+        guard let app = try? await NSWorkspace.shared.openApplication(at: storeURL, configuration: config),
+              isSystemStore(app) else {
+            log([tr(.init("log.storeLaunchFailed", defaultValue: "无法打开系统 App Store"))])
+            throw StoreAutomationError.unavailable
+        }
+        return app
     }
 
     private func activate(pid: pid_t) async throws {

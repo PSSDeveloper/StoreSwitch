@@ -7,7 +7,7 @@ import Carbon.HIToolbox
 
 @main
 @MainActor
-final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
+final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindowDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let menu = NSMenu()
     private let preferences = UserDefaults.standard
@@ -15,9 +15,10 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let clock = ISO8601DateFormatter()
     private let shortcut = MenuShortcut()
     private var accounts: [StoreAccount] = []
-    private var lastSelected: UUID?
     private let logHistory = LogHistory()
     private let loginReadout = LoginReadout()
+    private var permissionWindow: NSWindow?
+    private var permissionGuide: PermissionGuide?
     private var checkWindow: NSWindow?
     private var checkingFromMenu = false
     private var accountWindow: NSWindow?
@@ -43,22 +44,12 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             var seen = Set<UUID>()
             persistAccounts(saved.filter { StoreAccount.validEmail($0.email) && seen.insert($0.id).inserted })
         }
-        if let stored = preferences.string(forKey: "lastSelectedAccountID") {
-            lastSelected = UUID(uuidString: stored)
-        } else if let previousRegion = preferences.string(forKey: "lastSelected"),
-                  let previous = accounts.first(where: { $0.region.rawValue == previousRegion }) {
-            lastSelected = previous.id
-            preferences.set(previous.id.uuidString, forKey: "lastSelectedAccountID")
-            preferences.removeObject(forKey: "lastSelected")
-        }
         logHistory.lines = Array((preferences.stringArray(forKey: "operationLog") ?? []).suffix(300))
         statusItem.button?.image = NSImage(named: "AccountSwitchTemplate")
-        statusItem.button?.setAccessibilityLabel("App Store 账号切换")
-        statusItem.button?.toolTip = "App Store 账号切换"
         statusItem.menu = menu
         menu.delegate = self
         menu.autoenablesItems = false
-        buildApplicationMenu()
+        updateInterfaceLanguage()
         updateShortcut()
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
         append(["StoreSwitch \(version) · \(ProcessInfo.processInfo.operatingSystemVersionString)"])
@@ -66,7 +57,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // so macOS can look up its icon by bundle identifier.
         let registration = LSRegisterURL(Bundle.main.bundleURL as CFURL, true)
         if registration != noErr {
-            append(["应用包登记失败 · \(registration)"])
+            append([tr(.init("log.registrationFailed", defaultValue: "应用包登记失败 · \(registration)"))])
         }
         if CommandLine.arguments.contains("--manage-accounts") {
             Task { showAccounts() }
@@ -78,77 +69,162 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if accounts.isEmpty { showAccounts() }
-        else { showMenu() }
+        if permissionWindow != nil {
+            showPermissionGuide()
+        } else if accounts.isEmpty {
+            showAccounts()
+        } else {
+            showMenu()
+        }
         return false
     }
 
     func menuWillOpen(_ menu: NSMenu) { menuIsOpen = true }
     func menuDidClose(_ menu: NSMenu) { menuIsOpen = false }
 
+    func windowDidBecomeKey(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow, window === permissionWindow else { return }
+        permissionGuide?.refresh(trusted: AXIsProcessTrusted())
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow, window === permissionWindow else { return }
+        permissionWindow = nil
+        permissionGuide = nil
+    }
+
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
         let step = coordinator.step
         let trusted = AXIsProcessTrusted()
-        add("App Store 账号切换")
-        add(step.title)
-        if let state = coordinator.storeState {
-            add("上次检查：\(state.menuTitle)")
-        } else if let error = coordinator.checkError, step.canSelect {
-            add("上次检查：\(error)")
+        if !step.canSelect {
+            add(tr(step.title)).toolTip = step.guidance.map(tr)
+            if let target = coordinator.target {
+                let label = "\(target.region.flag) \(shortEmail(target.email))"
+                let item = add(tr(.init("menu.target", defaultValue: "目标 · \(label)")))
+                item.toolTip = target.email
+                item.setAccessibilityLabel(tr(.init("menu.target", defaultValue: "目标 · \(target.email)")))
+            }
+            menu.addItem(.separator())
+        } else if let state = coordinator.storeState {
+            add(tr(.init("menu.lastCheck", defaultValue: "上次检查 · \(tr(state.summary))"))).toolTip = tr(state.details)
+            menu.addItem(.separator())
+        } else if let error = coordinator.checkError {
+            add(tr(.init("menu.checkFailed", defaultValue: "上次检查失败"))).toolTip = tr(error)
+            menu.addItem(.separator())
         }
-        if let target = coordinator.target, !step.canSelect {
-            add("目标：\(target.label)")
-        } else if let lastSelected, let account = accounts.first(where: { $0.id == lastSelected }) {
-            add("上次选择：\(account.label)")
-        }
-        if case let .needsSignOut(detail) = step { add(detail) }
-        if case let .needsSignIn(detail) = step { add(detail) }
-        if case let .needsInitialCheck(detail) = step { add(detail) }
-        menu.addItem(.separator())
 
         if accounts.isEmpty {
-            add("添加账号…", #selector(showAccounts), enabled: step.canSelect)
+            add(tr(.init("menu.addAccount", defaultValue: "添加账号…")), #selector(showAccounts),
+                key: ",", enabled: step.canSelect)
+        } else {
+            menu.addItem(.sectionHeader(title: tr(.init("menu.switchAccounts", defaultValue: "切换账号"))))
         }
+        let titles = accounts.map { accountTitle($0, address: "\($0.region.flag) \(shortEmail($0.email))") }
+        let counts = Dictionary(grouping: titles, by: { $0 }).mapValues(\.count)
         for (index, account) in accounts.enumerated() {
-            let mode = account.passwordID == nil ? "" : " · 自动登录"
             let key = index < 9 ? String(index + 1) : ""
-            let item = add("切换到 \(account.label)\(mode)…", #selector(selectAccount(_:)),
-                           key: key, enabled: step.canSelect && !savingPassword)
+            let title = titles[index]
+            // Show the full address if two shortened labels would look identical.
+            let item = add(counts[title] == 1 ? title : accountTitle(account, address: account.label),
+                           #selector(selectAccount(_:)), key: key, enabled: step.canSelect && !savingPassword)
             item.representedObject = account.id.uuidString
+            let region = account.region.title(in: .current)
+            let accessibleAddress = tr(.init("menu.accountAddress", defaultValue: "\(region)，\(account.email)"))
+            let accessibleTitle = accountTitle(account, address: accessibleAddress)
+            item.toolTip = accessibleTitle
+            item.setAccessibilityLabel(accessibleTitle)
         }
 
         if !step.canSelect && !step.isWorking {
             menu.addItem(.separator())
             if case .needsSignOut = step {
-                add("退出后继续登录准备", #selector(continueAfterSignOut))
+                add(tr(.init("menu.continueSignIn", defaultValue: "继续登录")), #selector(continueAfterSignOut))
             }
             if case .needsInitialCheck = step {
-                add("重新检查并继续切换", #selector(retryInitialCheck))
+                add(tr(.init("menu.checkAgain", defaultValue: "重新检查")), #selector(retryInitialCheck))
             }
             if coordinator.isWaitingForLogin,
                step != .awaitingAuthentication(.submitted), step != .awaitingAuthentication(.submissionUncertain) {
-                add("重新打开原生登录", #selector(retryOpenSignIn))
-                add("重试预填已打开的表单", #selector(retryPrefill))
+                add(tr(.init("menu.openSignIn", defaultValue: "打开登录窗口")), #selector(retryOpenSignIn))
+                add(tr(.init("menu.refillEmail", defaultValue: "重填邮箱")), #selector(retryPrefill))
             }
-            add("复制目标邮箱", #selector(copyTarget), key: "c")
-            add("结束本次切换", #selector(endSwitch))
+            if step.guidance != nil {
+                add(tr(.init("menu.switchDetails", defaultValue: "查看切换详情")), #selector(showSwitchDetails))
+            }
+            add(tr(.init("menu.copyEmail", defaultValue: "复制邮箱")), #selector(copyTarget), key: "c")
+            add(tr(.init("menu.endSwitch", defaultValue: "结束切换")), #selector(endSwitch))
         }
 
         menu.addItem(.separator())
-        if !trusted {
-            add("辅助功能未授权")
-            add("辅助功能授权…", #selector(showPermissionGuide), enabled: !step.isWorking)
+        if !trusted || permissionWindow != nil {
+            let title: LocalizedStringResource = trusted
+                ? .init("menu.accessibilitySetup", defaultValue: "授权引导")
+                : .init("menu.grantAccessibility", defaultValue: "开启辅助功能权限…")
+            add(tr(title), #selector(showPermissionGuide), enabled: !step.isWorking)
         }
-        add("打开 App Store", #selector(openStore), enabled: !step.isWorking)
-        add("检查 App Store 登录状态", #selector(checkLogin), key: "r", enabled: !step.isWorking)
-        add("管理账号…", #selector(showAccounts), key: ",", enabled: step.canSelect)
-        let hotkey = add("全局菜单快捷键（⌃⌥S）", #selector(toggleShortcut))
+        add(tr(.init("menu.openStore", defaultValue: "打开 App Store")), #selector(openStore), enabled: !step.isWorking)
+        add(tr(.init("menu.checkSignIn", defaultValue: "检查登录状态")), #selector(checkLogin), key: "r", enabled: !step.isWorking)
+        if !accounts.isEmpty {
+            add(tr(.init("menu.manageAccounts", defaultValue: "管理账号…")), #selector(showAccounts), key: ",", enabled: step.canSelect)
+        }
+        let hotkey = add(tr(.init("menu.shortcut", defaultValue: "菜单快捷键（⌃⌥S）")), #selector(toggleShortcut))
         hotkey.state = shortcut.isRegistered ? .on : .off
-        add("操作日志…", #selector(showLog), key: "l")
+        add(tr(.init("menu.viewLog", defaultValue: "查看日志")), #selector(showLog), key: "l")
+        menu.addItem(languageMenuItem())
         menu.addItem(.separator())
-        add("关于 StoreSwitch", #selector(showAbout), enabled: !step.isWorking)
-        add("退出 StoreSwitch", #selector(quit), key: "q", enabled: !step.isWorking && !savingPassword)
+        add(tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), #selector(showAbout), enabled: !step.isWorking)
+        add(tr(.init("menu.quit", defaultValue: "退出 StoreSwitch")), #selector(quit), key: "q", enabled: !step.isWorking && !savingPassword)
+    }
+
+    private func accountTitle(_ account: StoreAccount, address: String) -> String {
+        guard account.passwordID != nil else { return address }
+        return tr(.init("menu.autoSignInAccount", defaultValue: "\(address) · 自动登录"))
+    }
+
+    private func shortEmail(_ email: String) -> String {
+        let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.menuFont(ofSize: 0)]
+        let maxWidth: CGFloat = 220
+        guard email.size(withAttributes: attributes).width > maxWidth else { return email }
+        for count in stride(from: email.count - 1, through: 2, by: -1) {
+            let candidate = "\(email.prefix((count + 1) / 2))…\(email.suffix(count / 2))"
+            if candidate.size(withAttributes: attributes).width <= maxWidth { return candidate }
+        }
+        return email
+    }
+
+    private func languageMenuItem() -> NSMenuItem {
+        let title = tr(.init("menu.language", defaultValue: "语言"))
+        let languages = NSMenu(title: title)
+        let current = AppLanguage.current
+        for language in AppLanguage.allCases {
+            let item = languages.addItem(withTitle: language.name, action: #selector(changeLanguage(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = language.rawValue
+            item.state = language == current ? .on : .off
+        }
+        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        item.submenu = languages
+        item.isEnabled = NSApp.modalWindow == nil
+        return item
+    }
+
+    @objc private func changeLanguage(_ sender: NSMenuItem) {
+        guard NSApp.modalWindow == nil, let code = sender.representedObject as? String,
+              let language = AppLanguage(rawValue: code), language != AppLanguage.current else { return }
+        preferences.set(language.rawValue, forKey: AppLanguage.preferenceKey)
+        updateInterfaceLanguage()
+    }
+
+    private func updateInterfaceLanguage() {
+        let label = tr(.init("app.statusItem", defaultValue: "App Store 账号切换"))
+        statusItem.button?.setAccessibilityLabel(label)
+        statusItem.button?.toolTip = label
+        accountWindow?.title = tr(.init("window.manageAccounts", defaultValue: "管理 App Store 账号"))
+        checkWindow?.title = tr(.init("window.loginStatus", defaultValue: "App Store 登录状态"))
+        logWindow?.title = tr(.init("window.log", defaultValue: "StoreSwitch 操作日志"))
+        aboutWindow?.title = tr(.init("menu.about", defaultValue: "关于 StoreSwitch"))
+        buildApplicationMenu()
     }
 
     @discardableResult
@@ -161,15 +237,18 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func selectAccount(_ sender: NSMenuItem) {
-        guard NSApp.modalWindow == nil, coordinator.step.canSelect, !savingPassword,
-              let id = sender.representedObject as? String,
+        guard let id = sender.representedObject as? String,
               let account = accounts.first(where: { $0.id.uuidString == id }) else { return }
+        startSwitch(to: account)
+    }
+
+    private func startSwitch(to account: StoreAccount) {
+        guard NSApp.modalWindow == nil, coordinator.step.canSelect, !savingPassword else { return }
         guard AXIsProcessTrusted() else {
-            showPermissionGuide()
+            presentPermissionGuide(for: .switchAccount(account))
             return
         }
-        lastSelected = account.id
-        preferences.set(id, forKey: "lastSelectedAccountID")
+        permissionWindow?.close()
         accountWindow?.close()
         Task {
             await coordinator.start(account) { [weak self] account in
@@ -181,11 +260,13 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func confirmExit(_ account: StoreAccount) -> Bool {
         NSApp.activate()
         let alert = NSAlert()
-        alert.messageText = "切换 App Store 账号？"
-        let login = account.passwordID == nil ? "预填目标邮箱" : "使用钥匙串中的密码在 App Store 提交登录"
-        alert.informativeText = "目标：\(account.email)\n\nStoreSwitch 将退出当前 App Store 账号，然后尝试\(login)。请在 App Store 完成 Apple 要求的验证。"
-        alert.addButton(withTitle: "取消").keyEquivalent = "\r"
-        alert.addButton(withTitle: "退出并继续").keyEquivalent = ""
+        alert.messageText = tr(.init("switch.confirm.title", defaultValue: "切换 App Store 账号？"))
+        let detail: LocalizedStringResource = account.passwordID == nil
+            ? .init("switch.confirm.manual", defaultValue: "目标：\(account.email)\n\nStoreSwitch 将退出当前 App Store 账号，然后尝试预填目标邮箱。请在 App Store 完成 Apple 要求的验证。")
+            : .init("switch.confirm.automatic", defaultValue: "目标：\(account.email)\n\nStoreSwitch 将退出当前 App Store 账号，然后尝试使用钥匙串中的密码在 App Store 提交登录。请在 App Store 完成 Apple 要求的验证。")
+        alert.informativeText = tr(detail)
+        alert.addButton(withTitle: tr(.init("common.cancel", defaultValue: "取消"))).keyEquivalent = "\r"
+        alert.addButton(withTitle: tr(.init("switch.confirm.continue", defaultValue: "退出并继续"))).keyEquivalent = ""
         return alert.runModal() == .alertSecondButtonReturn
     }
 
@@ -196,6 +277,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func retryOpenSignIn() { Task { await coordinator.retryLogin(openIfNeeded: true) } }
     @objc private func retryPrefill() { Task { await coordinator.retryLogin(openIfNeeded: false) } }
     @objc private func checkLogin() {
+        guard NSApp.modalWindow == nil else { return }
         if checkingFromMenu {
             checkWindow?.makeKeyAndOrderFront(nil)
             return
@@ -205,13 +287,18 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             Task { await coordinator.checkLogin() }
             return
         }
+        guard AXIsProcessTrusted() else {
+            presentPermissionGuide(for: .checkLogin)
+            return
+        }
+        permissionWindow?.close()
         checkingFromMenu = true
         loginReadout.message = nil
         if let checkWindow, checkWindow.isVisible {
             NSApp.activate()
             checkWindow.makeKeyAndOrderFront(nil)
         } else {
-            checkWindow = showWindow("App Store 登录状态", content: LoginStatusView(readout: loginReadout) { [weak self] in
+            checkWindow = showWindow(tr(.init("window.loginStatus", defaultValue: "App Store 登录状态")), content: LoginStatusView(readout: loginReadout) { [weak self] in
                 self?.checkWindow?.close()
             })
         }
@@ -224,6 +311,12 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func endSwitch() { coordinator.end() }
 
+    @objc private func showSwitchDetails() {
+        let step = coordinator.step
+        guard NSApp.modalWindow == nil, let guidance = step.guidance else { return }
+        showMessage(tr(step.title), tr(guidance))
+    }
+
     @objc private func copyTarget() {
         guard let target = coordinator.target else { return }
         NSPasteboard.general.clearContents()
@@ -233,35 +326,76 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func openStore() {
         Task {
             do { _ = try await automation.openStore() }
-            catch { showMessage("无法打开 App Store", (error as? StoreAutomationError)?.message ?? "") }
+            catch { showMessage(tr(.init("store.openFailed", defaultValue: "无法打开 App Store")), (error as? StoreAutomationError).map { tr($0.message) } ?? "") }
         }
     }
 
-    @objc private func showPermissionGuide() {
-        NSApp.activate()
-        let settingsPage = if #available(macOS 27, *) {
-            "隐私与安全 → 设备控制和数据访问"
-        } else {
-            "隐私与安全性 → 辅助功能"
-        }
-        let alert = NSAlert()
-        alert.icon = NSApp.applicationIconImage
-        alert.messageText = "开启辅助功能"
-        alert.informativeText = "在系统设置的「\(settingsPage)」中开启 StoreSwitch。如果旧条目仍显示默认图标，请移除该条目，再添加当前的 StoreSwitch.app。"
-        alert.addButton(withTitle: "打开辅助功能设置")
-        alert.addButton(withTitle: "稍后")
-        alert.addButton(withTitle: "在访达中显示当前 App")
-        switch alert.runModal() {
-        case .alertFirstButtonReturn:
-            _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
-            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                NSWorkspace.shared.open(url)
+    @objc private func showPermissionGuide() { presentPermissionGuide(for: .standalone) }
+
+    private func presentPermissionGuide(for request: PermissionGuide.Request) {
+        guard NSApp.modalWindow == nil else { return }
+        let trusted = AXIsProcessTrusted()
+        if let window = permissionWindow, let guide = permissionGuide {
+            // The menu also serves as a way back to an authorization already in progress.
+            switch request {
+            case .standalone: break
+            case .switchAccount, .checkLogin: guide.request = request
             }
-            append(["用户打开辅助功能设置"])
-        case .alertThirdButtonReturn:
-            NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
-        default:
+            guide.refresh(trusted: trusted)
+            NSApp.activate()
+            if window.isMiniaturized { window.deminiaturize(nil) }
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+
+        let guide = PermissionGuide(request: request, trusted: trusted)
+        permissionGuide = guide
+        let window = showWindow("StoreSwitch", content: PermissionGuideView(
+            guide: guide,
+            openSettings: { [weak self] in self?.openPermissionSettings() },
+            cancel: { [weak self] in self?.permissionWindow?.close() },
+            finish: { [weak self] in self?.finishPermissionGuide() }
+        ))
+        permissionWindow = window
+        window.delegate = self
+    }
+
+    private func openPermissionSettings() {
+        guard let guide = permissionGuide else { return }
+        guide.refresh(trusted: AXIsProcessTrusted())
+        guard guide.page != .granted else { return }
+        let firstRequest = guide.page == .introduction
+        guide.waitForPermission()
+        if firstRequest {
+            // Ask macOS to list this app on the first Settings launch.
+            _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
+        }
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"),
+           NSWorkspace.shared.open(url) {
+            append([tr(.init("log.openedAccessibilitySettings", defaultValue: "用户打开辅助功能设置"))])
+        } else {
+            guide.settingsDidNotOpen()
+        }
+    }
+
+    private func finishPermissionGuide() {
+        guard NSApp.modalWindow == nil, let guide = permissionGuide, guide.page == .granted else { return }
+        guide.refresh(trusted: AXIsProcessTrusted())
+        guard guide.page == .granted else { return }
+        let request = guide.request
+        permissionWindow?.close()
+        switch request {
+        case .standalone:
             break
+        case .switchAccount(let selected):
+            // Account management stays available while the user is in System Settings.
+            guard accounts.contains(selected) else {
+                showMessage(tr(.init("switch.accountChanged", defaultValue: "账号配置已更改")), tr(.init("switch.selectAgain", defaultValue: "请在菜单中重新选择要切换的账号。")))
+                return
+            }
+            startSwitch(to: selected)
+        case .checkLogin:
+            checkLogin()
         }
     }
 
@@ -280,7 +414,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }, removePassword: { [weak self, weak form] id in
             self?.removePassword(id, form: form)
         })
-        accountWindow = showWindow("管理 App Store 账号", content: editor)
+        accountWindow = showWindow(tr(.init("window.manageAccounts", defaultValue: "管理 App Store 账号")), content: editor)
     }
 
     private func saveAccounts(_ entries: [StoreAccount], form: AccountDrafts?) {
@@ -297,10 +431,6 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             StoreAccount(id: entry.id, region: entry.region, email: entry.email, passwordID: savedPasswords[entry.id])
         }
         persistAccounts(updates)
-        if let lastSelected, !updates.contains(where: { $0.id == lastSelected }) {
-            self.lastSelected = nil
-            preferences.removeObject(forKey: "lastSelectedAccountID")
-        }
         form?.didSave(updates)
     }
 
@@ -316,24 +446,24 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         do {
             try LocalPasswordItems.checkForRebuild()
         } catch {
-            showKeychainFailure("无法保存密码", error)
+            showKeychainFailure(tr(.init("keychain.saveFailed", defaultValue: "无法保存密码")), error)
             return
         }
         let alert = NSAlert()
-        alert.messageText = "设置自动登录密码"
-        alert.informativeText = "账号：\(account.email)\n密码仅存于本机钥匙串。以后从菜单选择此账号时，StoreSwitch 会尝试在系统 App Store 中提交登录。"
+        alert.messageText = tr(.init("keychain.setup", defaultValue: "设置自动登录密码"))
+        alert.informativeText = tr(.init("keychain.setupDetails", defaultValue: "账号：\(account.email)\n密码仅存于本机钥匙串。以后从菜单选择此账号时，StoreSwitch 会尝试在系统 App Store 中提交登录。"))
         let field = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 280, height: 24))
-        field.placeholderString = "Apple Account 密码"
-        field.setAccessibilityLabel("Apple Account 密码")
+        field.placeholderString = tr(.init("keychain.password", defaultValue: "Apple Account 密码"))
+        field.setAccessibilityLabel(tr(.init("keychain.password", defaultValue: "Apple Account 密码")))
         alert.accessoryView = field
-        alert.addButton(withTitle: "存入钥匙串并启用")
-        alert.addButton(withTitle: "取消")
+        alert.addButton(withTitle: tr(.init("keychain.enable", defaultValue: "存入钥匙串并启用")))
+        alert.addButton(withTitle: tr(.init("common.cancel", defaultValue: "取消")))
         alert.window.initialFirstResponder = field
         defer { field.stringValue = "" }
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         let password = field.stringValue
         guard !password.isEmpty else {
-            showMessage("请输入密码", "密码留空时不会保存。")
+            showMessage(tr(.init("keychain.enterPassword", defaultValue: "请输入密码")), tr(.init("keychain.emptyPassword", defaultValue: "密码留空时不会保存。")))
             return
         }
         let id = account.passwordID ?? UUID()
@@ -356,7 +486,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     form?.updatePassword(id, for: accountID)
                 }
             } catch {
-                showKeychainFailure("无法保存密码", error)
+                showKeychainFailure(tr(.init("keychain.saveFailed", defaultValue: "无法保存密码")), error)
             }
         }
     }
@@ -374,25 +504,25 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             form?.updatePassword(nil, for: accountID)
             return true
         } catch {
-            showKeychainFailure("无法移除账号密码", error)
+            showKeychainFailure(tr(.init("keychain.removeFailed", defaultValue: "无法移除账号密码")), error)
             return false
         }
     }
 
     private func showKeychainFailure(_ title: String, _ error: Error) {
         let failure = error as? KeychainFailure
-        append([failure?.logMessage ?? "钥匙串 · 密码操作失败"])
+        append([failure?.logMessage ?? tr(.init("log.keychainFailed", defaultValue: "钥匙串 · 密码操作失败"))])
         guard failure?.status == errSecCSStaticCodeChanged else {
-            showMessage(title, failure?.userMessage ?? "请查看 StoreSwitch 的操作日志后重试。")
+            showMessage(title, failure?.userMessage ?? tr(.init("common.viewLogAndRetry", defaultValue: "请查看 StoreSwitch 的操作日志后重试。")))
             return
         }
 
         NSApp.activate()
         let alert = NSAlert()
-        alert.messageText = "需要重新打开 StoreSwitch"
-        alert.informativeText = "磁盘上的 StoreSwitch 已更新。请重新打开应用，再访问钥匙串。账号列表中未保存的修改需要重新填写。"
-        alert.addButton(withTitle: "重新打开")
-        alert.addButton(withTitle: "稍后")
+        alert.messageText = tr(.init("keychain.reopen", defaultValue: "需要重新打开 StoreSwitch"))
+        alert.informativeText = tr(.init("keychain.reopenDetails", defaultValue: "磁盘上的 StoreSwitch 已更新。请重新打开应用，再访问钥匙串。账号列表中未保存的修改需要重新填写。"))
+        alert.addButton(withTitle: tr(.init("common.reopen", defaultValue: "重新打开")))
+        alert.addButton(withTitle: tr(.init("common.later", defaultValue: "稍后")))
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         shortcut.stop()
         Task {
@@ -405,7 +535,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 NSApp.terminate(nil)
             } catch {
                 updateShortcut()
-                showMessage("无法重新打开 StoreSwitch", "请在构建完成后退出 StoreSwitch，再从访达打开新构建。")
+                showMessage(tr(.init("keychain.reopenFailed", defaultValue: "无法重新打开 StoreSwitch")), tr(.init("keychain.reopenFailedDetails", defaultValue: "请在构建完成后退出 StoreSwitch，再从访达打开新构建。")))
             }
         }
     }
@@ -416,7 +546,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             logWindow.makeKeyAndOrderFront(nil)
             return
         }
-        logWindow = showWindow("StoreSwitch 操作日志", content: OperationLogView(history: logHistory) { [weak self] in
+        logWindow = showWindow(tr(.init("window.log", defaultValue: "StoreSwitch 操作日志")), content: OperationLogView(history: logHistory) { [weak self] in
             self?.exportLog()
         })
     }
@@ -430,7 +560,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             do {
                 try (self.logHistory.lines.joined(separator: "\n") + "\n").write(to: url, atomically: true, encoding: .utf8)
             } catch {
-                self.showMessage("无法保存日志", "请检查目标位置后再试。")
+                self.showMessage(tr(.init("log.exportFailed", defaultValue: "无法保存日志")), tr(.init("log.exportFailedDetails", defaultValue: "请检查目标位置后再试。")))
             }
         }
     }
@@ -458,7 +588,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = detail
-        alert.addButton(withTitle: "好")
+        alert.addButton(withTitle: tr(.init("common.ok", defaultValue: "好")))
         alert.runModal()
     }
 
@@ -471,7 +601,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         preferences.set(!shortcut.isRegistered, forKey: "menuShortcut")
         updateShortcut()
         if preferences.bool(forKey: "menuShortcut"), !shortcut.isRegistered {
-            showMessage("快捷键不可用", "⌃⌥S 可能已被其他应用使用。你仍可以点击菜单栏图标。")
+            showMessage(tr(.init("shortcut.unavailable", defaultValue: "快捷键不可用")), tr(.init("shortcut.conflict", defaultValue: "⌃⌥S 可能已被其他应用使用。你仍可以点击菜单栏图标。")))
         }
     }
 
@@ -479,7 +609,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let enabled = preferences.object(forKey: "menuShortcut") as? Bool ?? true
         shortcut.stop()
         if enabled, !shortcut.start({ [weak self] in self?.showMenu() }) {
-            append(["全局菜单快捷键注册失败"])
+            append([tr(.init("log.shortcutFailed", defaultValue: "全局菜单快捷键注册失败"))])
         }
     }
 
@@ -491,8 +621,8 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return
         }
         let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "StoreSwitch"
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "未知"
-        aboutWindow = showWindow("关于 \(name)", content: AboutView(name: name, version: version))
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? tr(.init("common.unknown", defaultValue: "未知"))
+        aboutWindow = showWindow(tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), content: AboutView(name: name, version: version))
     }
 
     @objc private func quit() {
@@ -504,30 +634,31 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let main = NSMenu()
         let appItem = NSMenuItem()
         let app = NSMenu()
-        app.addItem(withTitle: "关于 StoreSwitch", action: #selector(showAbout), keyEquivalent: "").target = self
+        app.addItem(withTitle: tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), action: #selector(showAbout), keyEquivalent: "").target = self
         app.addItem(.separator())
-        app.addItem(withTitle: "管理账号…", action: #selector(showAccounts), keyEquivalent: ",").target = self
-        app.addItem(withTitle: "检查 App Store 登录状态", action: #selector(checkLogin), keyEquivalent: "r").target = self
-        app.addItem(withTitle: "操作日志…", action: #selector(showLog), keyEquivalent: "l").target = self
+        app.addItem(withTitle: tr(.init("menu.manageAccounts", defaultValue: "管理账号…")), action: #selector(showAccounts), keyEquivalent: ",").target = self
+        app.addItem(withTitle: tr(.init("menu.checkSignIn", defaultValue: "检查登录状态")), action: #selector(checkLogin), keyEquivalent: "r").target = self
+        app.addItem(withTitle: tr(.init("menu.viewLog", defaultValue: "查看日志")), action: #selector(showLog), keyEquivalent: "l").target = self
+        app.addItem(languageMenuItem())
         app.addItem(.separator())
-        app.addItem(withTitle: "退出 StoreSwitch", action: #selector(quit), keyEquivalent: "q").target = self
+        app.addItem(withTitle: tr(.init("menu.quit", defaultValue: "退出 StoreSwitch")), action: #selector(quit), keyEquivalent: "q").target = self
         appItem.submenu = app
         main.addItem(appItem)
 
         let editItem = NSMenuItem()
-        let edit = NSMenu(title: "编辑")
-        edit.addItem(withTitle: "撤销", action: Selector(("undo:")), keyEquivalent: "z")
+        let edit = NSMenu(title: tr(.init("native.edit", defaultValue: "编辑")))
+        edit.addItem(withTitle: tr(.init("native.undo", defaultValue: "撤销")), action: Selector(("undo:")), keyEquivalent: "z")
         edit.addItem(.separator())
-        edit.addItem(withTitle: "剪切", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
-        edit.addItem(withTitle: "复制", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-        edit.addItem(withTitle: "粘贴", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-        edit.addItem(withTitle: "全选", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        edit.addItem(withTitle: tr(.init("native.cut", defaultValue: "剪切")), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        edit.addItem(withTitle: tr(.init("native.copy", defaultValue: "复制")), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        edit.addItem(withTitle: tr(.init("native.paste", defaultValue: "粘贴")), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        edit.addItem(withTitle: tr(.init("native.selectAll", defaultValue: "全选")), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         editItem.submenu = edit
         main.addItem(editItem)
 
         let windowItem = NSMenuItem()
-        let windows = NSMenu(title: "窗口")
-        windows.addItem(withTitle: "关闭窗口", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        let windows = NSMenu(title: tr(.init("native.window", defaultValue: "窗口")))
+        windows.addItem(withTitle: tr(.init("native.closeWindow", defaultValue: "关闭窗口")), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         windowItem.submenu = windows
         main.addItem(windowItem)
         NSApp.windowsMenu = windows
@@ -536,6 +667,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
 }
 
 private struct AboutView: View {
+    @AppStorage(AppLanguage.preferenceKey) private var language: AppLanguage = .preferred
     let name: String
     let version: String
 
@@ -547,8 +679,8 @@ private struct AboutView: View {
                 .frame(width: 72, height: 72)
                 .accessibilityHidden(true)
             Text(name).font(.title2.bold())
-            Text("版本 \(version)").foregroundStyle(.secondary)
-            Text("在 macOS 菜单栏快速切换 App Store 账号。")
+            Text(language.text(.init("about.version", defaultValue: "版本 \(version)"))).foregroundStyle(.secondary)
+            Text(language.text(.init("about.description", defaultValue: "在 macOS 菜单栏快速切换 App Store 账号。")))
                 .multilineTextAlignment(.center)
                 .padding(.top, 6)
         }
@@ -558,10 +690,11 @@ private struct AboutView: View {
 }
 
 private final class LoginReadout: ObservableObject {
-    @Published var message: String?
+    @Published var message: LocalizedStringResource?
 }
 
 private struct LoginStatusView: View {
+    @AppStorage(AppLanguage.preferenceKey) private var language: AppLanguage = .preferred
     @ObservedObject var readout: LoginReadout
     let close: () -> Void
 
@@ -569,13 +702,13 @@ private struct LoginStatusView: View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(spacing: 12) {
                 if let message = readout.message {
-                    Text(message).textSelection(.enabled)
+                    Text(language.text(message)).textSelection(.enabled)
                 } else {
                     ProgressView().controlSize(.small)
-                    Text("正在检查 App Store…")
+                    Text(language.text(.init("login.checkingStore", defaultValue: "正在检查 App Store…")))
                 }
             }
-            Button("关闭", action: close)
+            Button(language.text(.init("common.close", defaultValue: "关闭")), action: close)
                 .keyboardShortcut(.cancelAction)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
@@ -589,16 +722,17 @@ private final class LogHistory: ObservableObject {
 }
 
 private struct OperationLogView: View {
+    @AppStorage(AppLanguage.preferenceKey) private var language: AppLanguage = .preferred
     @ObservedObject var history: LogHistory
     let export: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("最近 \(history.lines.count) 条 · UTC")
+                Text(language.text(.init("log.count", defaultValue: "最近 \(history.lines.count) 条 · UTC")))
                     .foregroundStyle(.secondary)
                 Spacer()
-                Button("导出日志…", action: export)
+                Button(language.text(.init("log.export", defaultValue: "导出日志…")), action: export)
             }
             ScrollViewReader { scroll in
                 ScrollView {
@@ -643,6 +777,7 @@ private final class AccountDrafts: ObservableObject {
 }
 
 private struct AccountEditor: View {
+    @AppStorage(AppLanguage.preferenceKey) private var language: AppLanguage = .preferred
     @ObservedObject var form: AccountDrafts
     let save: ([StoreAccount]) -> Void
     let close: () -> Void
@@ -662,62 +797,62 @@ private struct AccountEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("账号列表").font(.title2.bold())
+                Text(language.text(.init("accounts.list", defaultValue: "账号列表"))).font(.title2.bold())
                 Spacer()
                 Button {
                     form.entries.append(StoreAccount())
                 } label: {
-                    Label("添加账号", systemImage: "plus")
+                    Label(language.text(.init("accounts.add", defaultValue: "添加账号")), systemImage: "plus")
                 }
             }
             if form.entries.isEmpty {
-                ContentUnavailableView("还没有账号", systemImage: "person.crop.circle",
-                                       description: Text("点「添加账号」填写 Apple Account 邮箱。"))
+                ContentUnavailableView(language.text(.init("accounts.empty", defaultValue: "还没有账号")), systemImage: "person.crop.circle",
+                                       description: Text(language.text(.init("accounts.emptyDetails", defaultValue: "点「添加账号」填写 Apple Account 邮箱。"))))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
                     Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 12) {
                         GridRow {
-                            Text("地区")
-                            Text("Apple Account 邮箱")
-                            Text("自动登录")
+                            Text(language.text(.init("accounts.region", defaultValue: "地区")))
+                            Text(language.text(.init("accounts.email", defaultValue: "Apple Account 邮箱")))
+                            Text(language.text(.init("accounts.autoSignIn", defaultValue: "自动登录")))
                             Color.clear.frame(width: 28, height: 1)
                         }
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                         ForEach($form.entries) { $entry in
                             GridRow {
-                                Picker("地区", selection: $entry.region) {
-                                    ForEach(StoreRegion.choices) { region in
-                                        Text(region.label).tag(region)
+                                Picker(language.text(.init("accounts.region", defaultValue: "地区")), selection: $entry.region) {
+                                    ForEach(StoreRegion.choices(in: language)) { region in
+                                        Text(region.label(in: language)).tag(region)
                                     }
                                 }
                                 .labelsHidden()
-                                .accessibilityLabel("账号地区")
+                                .accessibilityLabel(language.text(.init("accounts.accountRegion", defaultValue: "账号地区")))
                                 .frame(width: 148)
-                                TextField("Apple Account 邮箱", text: $entry.email,
-                                          prompt: Text("name@example.com"))
+                                TextField(language.text(.init("accounts.email", defaultValue: "Apple Account 邮箱")), text: $entry.email,
+                                          prompt: Text(verbatim: "name@example.com"))
                                     .labelsHidden()
-                                    .accessibilityLabel("Apple Account 邮箱")
+                                    .accessibilityLabel(language.text(.init("accounts.email", defaultValue: "Apple Account 邮箱")))
                                     .frame(minWidth: 240, maxWidth: .infinity)
                                 HStack(spacing: 6) {
-                                    Button(entry.passwordID == nil ? "设置密码…" : "更改密码…") {
+                                    Button(entry.passwordID == nil ? language.text(.init("accounts.setPassword", defaultValue: "设置密码…")) : language.text(.init("accounts.changePassword", defaultValue: "更改密码…"))) {
                                         editPassword(entry.id)
                                     }
                                     .disabled(!canEditPassword(for: entry))
                                     if entry.passwordID != nil {
-                                        Button("移除密码") { removePassword(entry.id) }
+                                        Button(language.text(.init("accounts.removePassword", defaultValue: "移除密码"))) { removePassword(entry.id) }
                                     }
                                 }
-                                .frame(width: 154, alignment: .leading)
+                                .fixedSize(horizontal: true, vertical: false)
                                 Button {
                                     let id = entry.id
                                     form.entries.removeAll { $0.id == id }
                                 } label: {
                                     Image(systemName: "trash").frame(width: 22)
                                 }
-                                .accessibilityLabel("删除账号")
-                                .help("保存时删除账号")
+                                .accessibilityLabel(language.text(.init("accounts.delete", defaultValue: "删除账号")))
+                                .help(language.text(.init("accounts.deleteHint", defaultValue: "保存时删除账号")))
                             }
                         }
                     }
@@ -729,18 +864,18 @@ private struct AccountEditor: View {
             Divider()
             HStack {
                 if form.isSavingPassword {
-                    Text("正在保存密码…").foregroundStyle(.secondary)
+                    Text(language.text(.init("accounts.savingPassword", defaultValue: "正在保存密码…"))).foregroundStyle(.secondary)
                 } else if hasInvalidEmail {
-                    Text("请输入有效的账号邮箱。").foregroundStyle(.red)
+                    Text(language.text(.init("accounts.invalidEmail", defaultValue: "请输入有效的账号邮箱。"))).foregroundStyle(.red)
                 } else {
-                    Text("保存邮箱后可设置自动登录。").foregroundStyle(.secondary)
+                    Text(language.text(.init("accounts.autoSignInHint", defaultValue: "保存邮箱后可设置自动登录。"))).foregroundStyle(.secondary)
                 }
                 Spacer()
                 if normalized == form.saved {
-                    Button("完成", action: close).keyboardShortcut(.defaultAction)
+                    Button(language.text(.init("common.done", defaultValue: "完成")), action: close).keyboardShortcut(.defaultAction)
                 } else {
-                    Button("取消", role: .cancel, action: close).keyboardShortcut(.cancelAction)
-                    Button("保存") { save(normalized) }
+                    Button(language.text(.init("common.cancel", defaultValue: "取消")), role: .cancel, action: close).keyboardShortcut(.cancelAction)
+                    Button(language.text(.init("common.save", defaultValue: "保存"))) { save(normalized) }
                         .keyboardShortcut(.defaultAction)
                         .disabled(hasInvalidEmail)
                 }

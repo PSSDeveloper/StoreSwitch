@@ -16,7 +16,7 @@ cp "$project/Info.plist" "$app/Contents/Info.plist"
     -target "$arch-apple-macosx14.0" \
     -swift-version 5 -warnings-as-errors \
     -framework AppKit -framework ApplicationServices \
-    "$project/Sources/App.swift" "$project/Sources/StoreAX.swift" \
+    "$project/Sources/App.swift" "$project/Sources/AppLanguage.swift" "$project/Sources/StoreAX.swift" \
     -o "$app/Contents/MacOS/StoreSwitchPOC"
 /usr/bin/codesign --force --sign - "$app"
 /usr/bin/codesign --verify --strict "$app"

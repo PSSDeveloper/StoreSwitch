@@ -28,7 +28,7 @@ private final class MemoryPasswordItems: PasswordItemStoring {
 @MainActor
 private final class FakeStore: StoreAutomating {
     enum Call: Equatable {
-        case inspect(open: Bool)
+        case inspect(activate: Bool)
         case observeLogin
         case signOut(pid_t)
         case readSavedPassword(UUID)
@@ -51,8 +51,8 @@ private final class FakeStore: StoreAutomating {
         self.preparation = preparation
     }
 
-    func inspect(open: Bool) async throws -> StoreSnapshot {
-        calls.append(.inspect(open: open))
+    func inspect(activate: Bool) async throws -> StoreSnapshot {
+        calls.append(.inspect(activate: activate))
         if let inspectionError { throw inspectionError }
         return StoreSnapshot(pid: 42, state: snapshots.removeFirst())
     }
@@ -89,7 +89,7 @@ private final class FakeStore: StoreAutomating {
 enum CoordinatorChecks {
     static func main() async {
         let account = StoreAccount(region: .turkey, email: "sample@example.com")
-        let inspect = FakeStore.Call.inspect(open: true)
+        let inspect = FakeStore.Call.inspect(activate: true)
         let prepare = FakeStore.Call.prepare(42, account.email, openIfNeeded: true)
         var passed = true
 
@@ -133,10 +133,10 @@ enum CoordinatorChecks {
             let waiting: Bool
             if case .needsInitialCheck = flow.step { waiting = true } else { waiting = false }
             check("reading an ambiguous session keeps the switch pending without acting",
-                  !asked && store.calls == [inspect, .inspect(open: false)] && waiting && flow.storeState == .unknown)
+                  !asked && store.calls == [inspect, .inspect(activate: false)] && waiting && flow.storeState == .unknown)
             await flow.retryInitialCheck { _ in asked = true; return true }
             check("retry after menu loads proceeds directly to login when signed out",
-                  !asked && flow.storeState == .signedOut && store.calls == [inspect, .inspect(open: false), inspect, prepare])
+                  !asked && flow.storeState == .signedOut && store.calls == [inspect, .inspect(activate: false), inspect, prepare])
         }
 
         do {
@@ -153,7 +153,7 @@ enum CoordinatorChecks {
                   flow.target == account && store.calls == [inspect, prepare, inspect, .prepare(42, account.email, openIfNeeded: false)])
             let result = await flow.checkLogin()
             check("a manual check detects login and clears a pending switch",
-                  result == .state(.signedIn) && store.calls.last == .inspect(open: false)
+                  result == .state(.signedIn) && store.calls.last == .inspect(activate: false)
                       && flow.step == .idle && flow.target == nil && !log.joined().contains(account.email))
         }
 
@@ -161,9 +161,9 @@ enum CoordinatorChecks {
             let store = FakeStore([.signedIn])
             let flow = AccountSwitchCoordinator(service: store) { _ in }
             let result = await flow.checkLogin()
-            check("standalone check exposes session state without selecting a target or mutating the store",
+            check("standalone check reads the session without activating or mutating the store",
                   result == .state(.signedIn) && flow.storeState == .signedIn && flow.step == .idle && flow.target == nil
-                      && store.calls == [.inspect(open: false)])
+                      && store.calls == [.inspect(activate: false)])
         }
 
         do {
@@ -214,7 +214,7 @@ enum CoordinatorChecks {
             let accounts = [StoreAccount(email: "a@example.com"), StoreAccount(email: "b@example.com")]
             check("new accounts can share an unspecified region while retaining independent identities",
                   accounts[0].id != accounts[1].id && accounts.allSatisfy { $0.region == .unspecified }
-                      && StoreRegion.choices.contains(StoreRegion(rawValue: "JP")))
+                      && AppLanguage.allCases.allSatisfy { StoreRegion.choices(in: $0).contains(StoreRegion(rawValue: "JP")) })
         }
 
         do {

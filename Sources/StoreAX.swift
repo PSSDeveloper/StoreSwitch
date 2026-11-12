@@ -53,16 +53,22 @@ enum StoreLabel: String, CaseIterable {
     }
 }
 
-enum StoreState: String {
-    case signedIn = "疑似已登录（Store 菜单中有 Sign Out）"
-    case signedOut = "疑似已退出（Store 菜单中有 Sign In）"
-    case unknown = "未知（菜单不可读、匹配不唯一，或缺少明确状态）"
+enum StoreState: Equatable {
+    case signedIn, signedOut, unknown
 
-    var menuTitle: String {
+    var summary: LocalizedStringResource {
         switch self {
-        case .signedIn: return "已登录 · 商店菜单显示「退出登录」"
-        case .signedOut: return "未登录 · 商店菜单显示「登录」"
-        case .unknown: return "无法从商店菜单判断"
+        case .signedIn: return .init("login.signedIn", defaultValue: "已登录")
+        case .signedOut: return .init("login.signedOut", defaultValue: "未登录")
+        case .unknown: return .init("login.unknown", defaultValue: "状态未知")
+        }
+    }
+
+    var details: LocalizedStringResource {
+        switch self {
+        case .signedIn: return .init("login.signedInDetails", defaultValue: "已登录 · 商店菜单显示「退出登录」")
+        case .signedOut: return .init("login.signedOutDetails", defaultValue: "未登录 · 商店菜单显示「登录」")
+        case .unknown: return .init("login.unknownDetails", defaultValue: "无法从商店菜单判断")
         }
     }
 
@@ -192,11 +198,11 @@ final class StoreAX {
 
     func run(_ operation: StoreOperation) {
         guard AXIsProcessTrusted() else {
-            log("辅助功能未授权，停止。")
+            log(tr(.init("log.axPermissionMissing", defaultValue: "辅助功能未授权，停止。")))
             return
         }
         let timeout = AXUIElementSetMessagingTimeout(root, 0.4)
-        log("AX root PID=\(pid) · 消息超时设置 \(axResult(timeout))")
+        log(tr(.init("log.axRootTimeout", defaultValue: "AX root PID=\(pid) · 消息超时设置 \(axResult(timeout))")))
         defer { reportFaults() }
 
         let menu = readMenu(report: true)
@@ -207,23 +213,23 @@ final class StoreAX {
             for item in menu.signIn { reportAction(item, name: "Sign In") }
             let tree = readWindows()
             report(tree)
-            for item in tree.signIn { reportAction(item, name: "窗口 Sign In") }
+            for item in tree.signIn { reportAction(item, name: tr(.init("log.axWindowSignIn", defaultValue: "窗口 Sign In"))) }
             for field in tree.fields { _ = reportWritability(field) }
-            log("只读检查完成。账号身份需在 App Store 内人工核对。")
+            log(tr(.init("log.axReadOnlyComplete", defaultValue: "只读检查完成。账号身份需在 App Store 内人工核对。")))
         case .revealMenu:
             let checked = menu.accountItem.map(enabled) == true ? menu : revealMenu(menu)
             if let item = checked?.accountItem {
                 reportAction(item, name: checked?.state == .signedIn ? "Sign Out" : "Sign In")
             }
-            log("菜单检查完成。")
+            log(tr(.init("log.axMenuCheckComplete", defaultValue: "菜单检查完成。")))
         case .signOut:
             guard menu.state != .signedOut else {
-                log("当前菜单显示 Sign In，已停止退出。")
+                log(tr(.init("log.axAlreadySignedOut", defaultValue: "当前菜单显示 Sign In，已停止退出。")))
                 return
             }
             let checked = menu.accountItem.map(enabled) == true ? menu : revealMenu(menu)
             guard let checked, checked.state == .signedIn, let item = checked.accountItem else {
-                log("未确认唯一的 Sign Out，停止。")
+                log(tr(.init("log.axSignOutAmbiguous", defaultValue: "未确认唯一的 Sign Out，停止。")))
                 return
             }
             reportAction(item, name: "Sign Out")
@@ -242,19 +248,19 @@ final class StoreAX {
             let tree = readWindows()
             report(tree)
             guard tree.complete, tree.fields.count == 1, let field = tree.fields.first else {
-                log("未找到唯一且可安全识别的 Apple Account 文本框，停止。")
+                log(tr(.init("log.axNoSafeEmailField", defaultValue: "未找到唯一且可安全识别的 Apple Account 文本框，停止。")))
                 return
             }
             let result = fill(field, email: testEmail)
             if result == .filled || result == .writeUncertain {
-                log("请在原生界面核对是否显示 \(testEmail)。用关闭或取消结束测试。")
+                log(tr(.init("log.axVerifyTestFill", defaultValue: "请在原生界面核对是否显示 \(testEmail)。用关闭或取消结束测试。")))
             }
         }
     }
 
     func reportFaults() {
         for key in faults.keys.sorted() {
-            log("AX 读取诊断 · \(key) ×\(faults[key, default: 0])")
+            log(tr(.init("log.axReadFaults", defaultValue: "AX 读取诊断 · \(key) ×\(faults[key, default: 0])")))
         }
     }
 
@@ -302,7 +308,7 @@ final class StoreAX {
             }
             Thread.sleep(forTimeInterval: 0.25)
         }
-        log("未找到可安全预填的账号输入框，请在 App Store 手动继续。")
+        log(tr(.init("log.axFillManually", defaultValue: "未找到可安全预填的账号输入框，请在 App Store 手动继续。")))
         return .manual
     }
 
@@ -313,7 +319,7 @@ final class StoreAX {
                 && form.submitButton.map { form.loginStage == .emailAndPassword || self.enabled($0) } == true
         }
         guard let initial, let firstButton = initial.submitButton else {
-            log("自动登录 · 无法确认已填写邮箱的原生表单")
+            log(tr(.init("log.axEmailFormUnconfirmed", defaultValue: "自动登录 · 无法确认已填写邮箱的原生表单")))
             return .finishManually
         }
 
@@ -321,10 +327,10 @@ final class StoreAX {
         if initial.loginStage == .email {
             let result = press(firstButton)
             guard result == .success else {
-                if result == .cannotComplete { log("自动登录 · 邮箱步骤提交结果待确认") }
+                if result == .cannotComplete { log(tr(.init("log.axEmailSubmissionUnconfirmed", defaultValue: "自动登录 · 邮箱步骤提交结果待确认"))) }
                 return .finishManually
             }
-            log("自动登录 · 已提交邮箱步骤")
+            log(tr(.init("log.axEmailSubmitted", defaultValue: "自动登录 · 已提交邮箱步骤")))
             submittedIn = sheet
         } else {
             submittedIn = nil
@@ -337,12 +343,12 @@ final class StoreAX {
         guard let passwordForm, let field = passwordForm.passwords.first,
               let button = passwordForm.submitButton, enabled(field), reportWritability(field),
               safeToAct(on: field) else {
-            log("自动登录 · 未找到可写且匹配账号的安全密码框")
+            log(tr(.init("log.axNoSafePassword", defaultValue: "自动登录 · 未找到可写且匹配账号的安全密码框")))
             return .finishManually
         }
 
         let write = AXUIElementSetAttributeValue(field.element, kAXValueAttribute as CFString, password as CFString)
-        log("自动登录 · 密码框写入 \(axResult(write))")
+        log(tr(.init("log.axPasswordWrite", defaultValue: "自动登录 · 密码框写入 \(axResult(write))")))
         guard write == .success else { return .finishManually }
         let ready = waitForLoginForm(timeout: 2) { form in
             form.sheet == passwordForm.sheet && form.passwords.first?.element == field.element
@@ -353,10 +359,10 @@ final class StoreAX {
         guard let submit = ready?.submitButton else { return .finishManually }
         switch press(submit) {
         case .success:
-            log("自动登录 · 已提交密码步骤")
+            log(tr(.init("log.axPasswordSubmitted", defaultValue: "自动登录 · 已提交密码步骤")))
             return .submitted
         case .cannotComplete:
-            log("自动登录 · 密码步骤提交结果待确认")
+            log(tr(.init("log.axPasswordSubmissionUnconfirmed", defaultValue: "自动登录 · 密码步骤提交结果待确认")))
             return .submissionUncertain
         default:
             return .finishManually
@@ -389,13 +395,13 @@ final class StoreAX {
 
     private func pressSignIn(in menu: Menu) -> AXError? {
         guard menu.state == .signedOut, isFrontmost, let item = menu.accountItem else {
-            log("未确认唯一的「登录」菜单项，未打开登录窗口。")
+            log(tr(.init("log.axSignInAmbiguous", defaultValue: "未确认唯一的「登录」菜单项，未打开登录窗口。")))
             return nil
         }
         // A nil result means no AXPress was sent. Once sent, even a timeout can
         // open the form, so do not try another entry in the same operation.
         if let result = press(item) {
-            log("登录入口 · 商店菜单")
+            log(tr(.init("log.axSignInMenu", defaultValue: "登录入口 · 商店菜单")))
             return result
         }
         guard isFrontmost else { return nil }
@@ -403,14 +409,14 @@ final class StoreAX {
         guard !tree.hasSheet, tree.fields.isEmpty else { return nil }
         if tree.complete, tree.signIn.count == 1, let button = tree.signIn.first,
            readMenu(report: false).state == .signedOut, let result = press(button) {
-            log("登录入口 · App Store 窗口")
+            log(tr(.init("log.axSignInWindow", defaultValue: "登录入口 · App Store 窗口")))
             return result
         }
         // Some versions only enable the menu item after the Store menu is expanded.
         let current = readMenu(report: false)
         guard current.state == .signedOut, let refreshed = revealMenu(current),
               refreshed.state == .signedOut, let signIn = refreshed.accountItem else { return nil }
-        log("登录入口 · 展开后的商店菜单")
+        log(tr(.init("log.axSignInExpandedMenu", defaultValue: "登录入口 · 展开后的商店菜单")))
         return press(signIn)
     }
 
@@ -431,12 +437,12 @@ final class StoreAX {
 
     private func configure() -> Bool {
         guard AXIsProcessTrusted() else {
-            log("辅助功能未授权，停止。")
+            log(tr(.init("log.axPermissionMissing", defaultValue: "辅助功能未授权，停止。")))
             return false
         }
         let result = AXUIElementSetMessagingTimeout(root, 0.4)
         guard result == .success else {
-            log("AX 消息超时设置失败 · \(axResult(result))")
+            log(tr(.init("log.axTimeoutFailed", defaultValue: "AX 消息超时设置失败 · \(axResult(result))")))
             return false
         }
         return true
@@ -481,7 +487,7 @@ final class StoreAX {
         }
         guard count > 0 else { return [] }
         if count > limit {
-            record("\(key) 超过单层扫描上限")
+            record(tr(.init("log.axChildrenLimit", defaultValue: "\(key) 超过单层扫描上限")))
         }
         var values: CFArray?
         let error = AXUIElementCopyAttributeValues(element, key as CFString, 0, min(count, limit), &values)
@@ -490,18 +496,18 @@ final class StoreAX {
             return []
         }
         if items.count != min(count, limit) {
-            record("\(key) 数量在读取时变化")
+            record(tr(.init("log.axChildrenChanged", defaultValue: "\(key) 数量在读取时变化")))
         }
         return items
     }
 
     private func node(_ element: AXUIElement, authentication: Bool = false) -> Node? {
         guard owns(element) else {
-            record("跳过非 App Store 或归属不明的 AX 元素")
+            record(tr(.init("log.axForeignElement", defaultValue: "跳过非 App Store 或归属不明的 AX 元素")))
             return nil
         }
         guard let role = attribute(element, kAXRoleAttribute) as? String else {
-            record("元素缺少 AXRole")
+            record(tr(.init("log.axRoleMissing", defaultValue: "元素缺少 AXRole")))
             return nil
         }
         var subrole: String?
@@ -535,20 +541,20 @@ final class StoreAX {
             menu = readMenu(report: false)
             if menu.state != .unknown { break }
         }
-        log("商店菜单重读 \(retries) 次 · \(menu.state.rawValue)")
+        log(tr(.init("log.axMenuReadRetries", defaultValue: "商店菜单重读 \(retries) 次 · \(tr(menu.state.details))")))
         return menu
     }
 
     private func readMenu(report: Bool) -> Menu {
         let initialFaults = faultCount
         guard let bar = element(root, kAXMenuBarAttribute), owns(bar) else {
-            if report { log("AXMenuBar 不可读或归属不明。") }
+            if report { log(tr(.init("log.axMenuBarUnavailable", defaultValue: "AXMenuBar 不可读或归属不明。"))) }
             return Menu(store: nil, entries: [], complete: false)
         }
         let items = children(bar, kAXChildrenAttribute, limit: 32).compactMap { node($0) }
         let stores = items.filter { $0.matches(.store, role: kAXMenuBarItemRole) }
         guard faultCount == initialFaults, stores.count == 1, let store = stores.first else {
-            if report { log("AXMenuBar · 顶层元素 \(items.count) 个 · Store 匹配 \(stores.count) 个 · 状态未知") }
+            if report { log(tr(.init("log.axMenuBarCounts", defaultValue: "AXMenuBar · 顶层元素 \(items.count) 个 · Store 匹配 \(stores.count) 个 · 状态未知"))) }
             return Menu(store: nil, entries: [], complete: false)
         }
         let groups = children(store.element, kAXChildrenAttribute, limit: 40).compactMap { node($0) }
@@ -566,9 +572,9 @@ final class StoreAX {
             complete: validShape && !entries.isEmpty && faultCount == initialFaults
         )
         if report {
-            log("AXMenuBar → AXMenuBarItem[Store] · 子菜单 \(containers.count) 个 · 条目 \(entries.count) 个 · 完整=\(menu.complete)")
-            log("Sign Out 匹配 \(menu.signOut.count) 个 · Sign In 匹配 \(menu.signIn.count) 个")
-            log("状态 · \(menu.state.rawValue)")
+            log(tr(.init("log.axMenuCounts", defaultValue: "AXMenuBar → AXMenuBarItem[Store] · 子菜单 \(containers.count) 个 · 条目 \(entries.count) 个 · 完整=\(String(menu.complete))")))
+            log(tr(.init("log.axAuthItemCounts", defaultValue: "Sign Out 匹配 \(menu.signOut.count) 个 · Sign In 匹配 \(menu.signIn.count) 个")))
+            log(tr(.init("log.state", defaultValue: "状态 · \(tr(menu.state.details))")))
         }
         return menu
     }
@@ -580,7 +586,7 @@ final class StoreAX {
         let focused = element(root, kAXFocusedWindowAttribute)
         let scope = focused.map { [$0] } ?? windows
         guard scope.count == 1, let window = scope.first, owns(window) else {
-            log("窗口范围不唯一或不可读 · App Store AXWindows=\(windows.count)")
+            log(tr(.init("log.axWindowsAmbiguous", defaultValue: "窗口范围不唯一或不可读 · App Store AXWindows=\(windows.count)")))
             tree.complete = false
             return tree
         }
@@ -588,7 +594,7 @@ final class StoreAX {
         let sheets = sheets(in: window)
         tree.hasSheet = !sheets.isEmpty
         guard sheets.count <= 1 else {
-            log("窗口存在多个原生表单，停止自动识别。")
+            log(tr(.init("log.axMultipleForms", defaultValue: "窗口存在多个原生表单，停止自动识别。")))
             tree.complete = false
             return tree
         }
@@ -605,7 +611,7 @@ final class StoreAX {
         var index = 0
         while index < queue.count {
             guard index < 280, ProcessInfo.processInfo.systemUptime < deadline else {
-                record("窗口扫描达到时间或节点上限")
+                record(tr(.init("log.axWindowScanLimit", defaultValue: "窗口扫描达到时间或节点上限")))
                 break
             }
             let (element, depth) = queue[index]
@@ -644,21 +650,21 @@ final class StoreAX {
                 // Record only structure and fixed labels. Never print arbitrary AX strings.
                 let labels = knownLabels.map { " [\($0)]" }.joined()
                 let role = item.role.hasPrefix("AX") && item.role.count < 50
-                    && item.role.allSatisfy { $0.isASCII && $0.isLetter } ? item.role : "其他角色"
+                    && item.role.allSatisfy { $0.isASCII && $0.isLetter } ? item.role : tr(.init("log.axOtherRole", defaultValue: "其他角色"))
                 let secure = item.subrole == kAXSecureTextFieldSubrole ? " [secure]" : ""
                 tree.lines.append("\(String(repeating: "  ", count: depth))\(role)\(secure)\(labels)")
             }
             if item.subrole == kAXSecureTextFieldSubrole { continue }
             let next = children(element, kAXChildrenAttribute, limit: 80)
             if depth == 16, !next.isEmpty {
-                record("窗口扫描达到深度上限")
+                record(tr(.init("log.axWindowDepthLimit", defaultValue: "窗口扫描达到深度上限")))
             } else {
                 queue.append(contentsOf: next.map { ($0, depth + 1) })
             }
         }
         tree.complete = faultCount == initialFaults
         if !authentication {
-            log("窗口范围 · App Store AXWindows=\(windows.count) · AXSheet=\(sheets.count) · 已扫描 \(seen.count) 节点")
+            log(tr(.init("log.axWindowCounts", defaultValue: "窗口范围 · App Store AXWindows=\(windows.count) · AXSheet=\(sheets.count) · 已扫描 \(seen.count) 节点")))
         }
         return tree
     }
@@ -674,9 +680,9 @@ final class StoreAX {
     }
 
     private func report(_ tree: WindowTree) {
-        log("窗口 AX 树（最多 45 个普通节点，另列已匹配节点）")
+        log(tr(.init("log.axWindowTree", defaultValue: "窗口 AX 树（最多 45 个普通节点，另列已匹配节点）")))
         for line in tree.lines { log(line) }
-        log("登录入口 \(tree.signIn.count) 个 · Apple Account 文本框 \(tree.fields.count) 个 · 完整=\(tree.complete)")
+        log(tr(.init("log.axWindowFieldCounts", defaultValue: "登录入口 \(tree.signIn.count) 个 · Apple Account 文本框 \(tree.fields.count) 个 · 完整=\(String(tree.complete))")))
     }
 
     private func enabled(_ node: Node) -> Bool {
@@ -692,18 +698,19 @@ final class StoreAX {
     private func reportAction(_ node: Node, name: String) {
         let isEnabled = attribute(node.element, kAXEnabledAttribute) as? Bool
         let capability = pressCapability(node)
-        log("\(name) · AXEnabled=\(isEnabled.map(String.init) ?? "未知") · AXPress=\(capability.supported) · \(axResult(capability.result))")
+        let enabledText = isEnabled.map(String.init) ?? tr(.init("common.unknown", defaultValue: "未知"))
+        log("\(name) · AXEnabled=\(enabledText) · AXPress=\(String(capability.supported)) · \(axResult(capability.result))")
     }
 
     private func revealMenu(_ menu: Menu) -> Menu? {
         guard let store = menu.store else {
-            log("缺少唯一的 Store 菜单，停止。")
+            log(tr(.init("log.axStoreMenuAmbiguous", defaultValue: "缺少唯一的 Store 菜单，停止。")))
             return nil
         }
-        log("展开顶层 Store 菜单，等待菜单项更新。")
+        log(tr(.init("log.axExpandMenu", defaultValue: "展开顶层 Store 菜单，等待菜单项更新。")))
         // Native menu tracking can keep AXPress waiting while the menu is open.
         let timeout = AXUIElementSetMessagingTimeout(store.element, 0.4)
-        log("Store 菜单消息超时设置 · \(axResult(timeout))")
+        log(tr(.init("log.axStoreMenuTimeout", defaultValue: "Store 菜单消息超时设置 · \(axResult(timeout))")))
         let result = press(store)
         guard result == .success || result == .cannotComplete else { return nil }
 
@@ -712,12 +719,12 @@ final class StoreAX {
             guard safeToAct(on: store) else { return nil }
             let refreshed = readMenu(report: false)
             if let item = refreshed.accountItem, enabled(item) {
-                log("菜单刷新后 · \(refreshed.state.rawValue)")
+                log(tr(.init("log.axMenuRefreshed", defaultValue: "菜单刷新后 · \(tr(refreshed.state.details))")))
                 return refreshed
             }
             Thread.sleep(forTimeInterval: 0.1)
         } while ProcessInfo.processInfo.systemUptime < deadline
-        log("展开后未确认唯一且启用的账号菜单项。")
+        log(tr(.init("log.axNoUniqueEnabledItem", defaultValue: "展开后未确认唯一且启用的账号菜单项。")))
         _ = readMenu(report: true)
         return nil
     }
@@ -729,7 +736,7 @@ final class StoreAX {
 
     private func safeToAct(on node: Node) -> Bool {
         guard owns(node.element), isFrontmost else {
-            log("目标已变更、未在前台，或授权已撤回，停止。")
+            log(tr(.init("log.axUnsafeTarget", defaultValue: "目标已变更、未在前台，或授权已撤回，停止。")))
             return false
         }
         return true
@@ -738,19 +745,19 @@ final class StoreAX {
     @discardableResult
     private func press(_ node: Node) -> AXError? {
         guard enabled(node) else {
-            log("AXEnabled 未明确为 true，停止。")
+            log(tr(.init("log.axEnabledUnconfirmed", defaultValue: "AXEnabled 未明确为 true，停止。")))
             return nil
         }
         let capability = pressCapability(node)
         guard capability.supported else {
-            log("元素未公开 AXPress · AXCopyActionNames \(axResult(capability.result))")
+            log(tr(.init("log.axPressUnavailable", defaultValue: "元素未公开 AXPress · AXCopyActionNames \(axResult(capability.result))")))
             return nil
         }
         guard safeToAct(on: node) else { return nil }
         let result = AXUIElementPerformAction(node.element, kAXPressAction as CFString)
         log("AXPress · \(axResult(result))")
         if result == .cannotComplete {
-            log("App Store 未及时响应。动作可能已生效，请核对界面。")
+            log(tr(.init("log.axActionUnconfirmed", defaultValue: "App Store 未及时响应。动作可能已生效，请核对界面。")))
         }
         return result
     }
@@ -763,7 +770,7 @@ final class StoreAX {
             Thread.sleep(forTimeInterval: 0.25)
             state = readMenu(report: false).state
         } while state != .signedOut && ProcessInfo.processInfo.systemUptime < deadline
-        log("退出后检查 · \(state.rawValue)。如 App Store 显示确认框，由你在原生界面处理后重新检查。")
+        log(tr(.init("log.axCheckAfterSignOut", defaultValue: "退出后检查 · \(tr(state.details))。如 App Store 显示确认框，由你在原生界面处理后重新检查。")))
         return state
     }
 
@@ -772,7 +779,7 @@ final class StoreAX {
         guard let current = node(field.element), faultCount == initialFaults,
               acceptsAccountField(role: current.role, subrole: current.subrole, labels: current.labels),
               enabled(current) else {
-            log("文本框已变化或禁用，停止。")
+            log(tr(.init("log.axFieldChanged", defaultValue: "文本框已变化或禁用，停止。")))
             return .manual
         }
         guard reportWritability(current), safeToAct(on: current) else { return .manual }
@@ -788,7 +795,7 @@ final class StoreAX {
     private func reportWritability(_ field: Node) -> Bool {
         var settable = DarwinBoolean(false)
         let checked = AXUIElementIsAttributeSettable(field.element, kAXValueAttribute as CFString, &settable)
-        log("AXValue 可写检查 · \(axResult(checked)) · settable=\(settable.boolValue)")
+        log(tr(.init("log.axFieldWritable", defaultValue: "AXValue 可写检查 · \(axResult(checked)) · settable=\(String(settable.boolValue))")))
         return checked == .success && settable.boolValue
     }
 }

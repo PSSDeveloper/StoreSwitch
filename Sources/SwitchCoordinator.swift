@@ -7,23 +7,27 @@ struct StoreRegion: RawRepresentable, Codable, Identifiable, Hashable {
     static let china = StoreRegion(rawValue: "CN")
     static let unitedStates = StoreRegion(rawValue: "US")
     static let turkey = StoreRegion(rawValue: "TR")
-    private static let displayLocale = Locale(identifier: "zh_Hans")
-
-    static let choices: [StoreRegion] = {
+    private static let localizedChoices: [AppLanguage: [StoreRegion]] = {
         let common = [china, unitedStates, turkey]
         let others = Set(Locale.Region.isoRegions.map { StoreRegion(rawValue: $0.identifier) })
             .subtracting(common + [unspecified])
             .filter { $0.flag != "🌐" }
-            .sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
-        return [unspecified] + common + others
+        return Dictionary(uniqueKeysWithValues: AppLanguage.allCases.map { language in
+            let sorted = others.map { ($0, $0.title(in: language)) }.sorted {
+                $0.1.compare($1.1, options: [.numeric], locale: language.locale) == .orderedAscending
+            }.map { $0.0 }
+            return (language, [unspecified] + common + sorted)
+        })
     }()
+
+    static func choices(in language: AppLanguage) -> [StoreRegion] { localizedChoices[language] ?? [] }
 
     var id: String { rawValue }
 
-    var title: String {
-        if self == .unspecified { return "未指定" }
-        if self == .china { return "中国大陆" }
-        return Self.displayLocale.localizedString(forRegionCode: rawValue) ?? rawValue
+    func title(in language: AppLanguage) -> String {
+        if self == .unspecified { return language.text(.init("region.unspecified", defaultValue: "未指定")) }
+        if self == .china { return language.text(.init("region.china", defaultValue: "中国大陆")) }
+        return language.locale.localizedString(forRegionCode: rawValue) ?? rawValue
     }
 
     var flag: String {
@@ -32,7 +36,7 @@ struct StoreRegion: RawRepresentable, Codable, Identifiable, Hashable {
         return letters.compactMap { UnicodeScalar(0x1F1E6 + Int($0) - 65) }.map(String.init).joined()
     }
 
-    var label: String { "\(flag) \(title)" }
+    func label(in language: AppLanguage) -> String { "\(flag) \(title(in: language))" }
 
     init(rawValue: String) { self.rawValue = rawValue }
 
@@ -90,19 +94,19 @@ struct StoreSnapshot {
 enum StoreAutomationError: Error {
     case permission, unavailable, processChanged, notFrontmost
 
-    var message: String {
+    var message: LocalizedStringResource {
         switch self {
-        case .permission: return "请在系统设置开启辅助功能，再继续。"
-        case .unavailable: return "系统 App Store 未打开或无法读取。"
-        case .processChanged: return "App Store 已重新启动，请检查原生界面后继续。"
-        case .notFrontmost: return "App Store 未能成为前台，请打开它后重试。"
+        case .permission: return .init("error.permission", defaultValue: "请在系统设置开启辅助功能，再继续。")
+        case .unavailable: return .init("error.storeUnavailable", defaultValue: "系统 App Store 未打开或无法读取。")
+        case .processChanged: return .init("error.processChanged", defaultValue: "App Store 已重新启动，请检查原生界面后继续。")
+        case .notFrontmost: return .init("error.notFrontmost", defaultValue: "App Store 未能成为前台，请打开它后重试。")
         }
     }
 }
 
 @MainActor
 protocol StoreAutomating {
-    func inspect(open: Bool) async throws -> StoreSnapshot
+    func inspect(activate: Bool) async throws -> StoreSnapshot
     func observeLogin() async throws -> StoreState
     func signOut(pid: pid_t) async throws -> StoreState
     func readSavedPassword(id: UUID) async throws -> String
@@ -114,11 +118,11 @@ protocol StoreAutomating {
 final class AccountSwitchCoordinator {
     enum LoginCheck: Equatable {
         case state(StoreState)
-        case unavailable(String)
+        case unavailable(LocalizedStringResource)
 
-        var message: String {
+        var message: LocalizedStringResource {
             switch self {
-            case .state(let state): return state.menuTitle
+            case .state(let state): return state.details
             case .unavailable(let reason): return reason
             }
         }
@@ -128,9 +132,9 @@ final class AccountSwitchCoordinator {
         case idle, checking, confirmExit, readingKeychain, signingOut, preparing
         case awaitingAuthentication(LoginPreparation)
         case verifying, cancelled
-        case needsInitialCheck(String)
-        case needsSignOut(String)
-        case needsSignIn(String)
+        case needsInitialCheck(LocalizedStringResource)
+        case needsSignOut(LocalizedStringResource)
+        case needsSignIn(LocalizedStringResource)
 
         var isWorking: Bool {
             switch self {
@@ -146,25 +150,39 @@ final class AccountSwitchCoordinator {
             }
         }
 
-        var title: String {
+        var title: LocalizedStringResource {
             switch self {
-            case .idle: return "就绪"
-            case .checking: return "正在检查 App Store…"
-            case .confirmExit: return "等待确认退出"
-            case .readingKeychain: return "正在读取钥匙串 · 如有提示，请在系统窗口确认"
-            case .signingOut: return "正在退出当前账号…"
-            case .preparing: return "正在准备登录…"
-            case .awaitingAuthentication(.filled): return "已尝试预填 · 请在 App Store 登录"
-            case .awaitingAuthentication(.writeUncertain): return "预填结果未确认 · 请核对邮箱后登录"
-            case .awaitingAuthentication(.manual): return "请在 App Store 手动登录"
-            case .awaitingAuthentication(.finishManually): return "请在 App Store 继续登录"
-            case .awaitingAuthentication(.submitted): return "已提交登录 · 请处理 Apple 验证（如有）"
-            case .awaitingAuthentication(.submissionUncertain): return "提交结果待确认 · 请查看 App Store"
-            case .verifying: return "正在检查登录状态…"
-            case .cancelled: return "切换已结束"
-            case .needsInitialCheck: return "未能确认当前登录状态"
-            case .needsSignOut: return "需要检查退出状态"
-            case .needsSignIn: return "需要检查登录状态"
+            case .idle: return .init("state.ready", defaultValue: "就绪")
+            case .checking, .verifying: return .init("state.checking", defaultValue: "正在检查登录状态…")
+            case .confirmExit: return .init("state.confirmExit", defaultValue: "等待确认退出")
+            case .readingKeychain: return .init("state.readingKeychain", defaultValue: "正在读取钥匙串…")
+            case .signingOut: return .init("state.signingOut", defaultValue: "正在退出登录…")
+            case .preparing: return .init("state.preparing", defaultValue: "正在准备登录…")
+            case .awaitingAuthentication(.filled), .awaitingAuthentication(.manual), .awaitingAuthentication(.finishManually):
+                return .init("state.finishSignIn", defaultValue: "请在 App Store 完成登录")
+            case .awaitingAuthentication(.writeUncertain): return .init("state.verifyEmail", defaultValue: "请核对邮箱后登录")
+            case .awaitingAuthentication(.submitted): return .init("state.waitingForSignIn", defaultValue: "等待登录完成")
+            case .awaitingAuthentication(.submissionUncertain): return .init("state.submissionUnconfirmed", defaultValue: "登录提交待确认")
+            case .cancelled: return .init("state.cancelled", defaultValue: "切换已结束")
+            case .needsInitialCheck, .needsSignIn: return .init("state.needsSignInCheck", defaultValue: "需要检查登录状态")
+            case .needsSignOut: return .init("state.needsSignOutCheck", defaultValue: "需要检查退出状态")
+            }
+        }
+
+        var guidance: LocalizedStringResource? {
+            switch self {
+            case .needsInitialCheck(let detail), .needsSignOut(let detail), .needsSignIn(let detail): return detail
+            case .readingKeychain:
+                return .init("guidance.keychain", defaultValue: "如果 macOS 请求访问钥匙串，请在系统提示中确认。")
+            case .awaitingAuthentication(.filled):
+                return .init("guidance.filled", defaultValue: "已尝试预填邮箱。请核对后在 App Store 登录。")
+            case .awaitingAuthentication(.writeUncertain):
+                return .init("guidance.writeUncertain", defaultValue: "尚未确认邮箱是否填入。请在 App Store 核对后登录。")
+            case .awaitingAuthentication(.submitted):
+                return .init("guidance.submitted", defaultValue: "已提交登录。如有 Apple 验证提示，请在 App Store 完成。")
+            case .awaitingAuthentication(.submissionUncertain):
+                return .init("guidance.submissionUncertain", defaultValue: "请在 App Store 查看登录是否已提交，并完成 Apple 要求的验证。")
+            default: return nil
             }
         }
     }
@@ -172,7 +190,7 @@ final class AccountSwitchCoordinator {
     private(set) var step: Step = .idle
     private(set) var target: StoreAccount?
     private(set) var storeState: StoreState?
-    private(set) var checkError: String?
+    private(set) var checkError: LocalizedStringResource?
     private let service: any StoreAutomating
     private let log: (String) -> Void
 
@@ -188,7 +206,7 @@ final class AccountSwitchCoordinator {
     func start(_ account: StoreAccount, confirmExit: (StoreAccount) -> Bool) async {
         guard step.canSelect, StoreAccount.validEmail(account.email) else { return }
         target = account
-        log("开始切换 · 地区 \(account.region.title)")
+        log(tr(.init("log.switchStarted", defaultValue: "开始切换 · 地区 \(account.region.title(in: .current))")))
         await checkBeforeSwitch(account, confirmExit: confirmExit)
     }
 
@@ -200,9 +218,9 @@ final class AccountSwitchCoordinator {
     private func checkBeforeSwitch(_ account: StoreAccount, confirmExit: (StoreAccount) -> Bool) async {
         transition(.checking)
         do {
-            let snapshot = try await inspect(open: true)
+            let snapshot = try await inspect(activate: true)
             guard snapshot.state != .unknown else {
-                transition(.needsInitialCheck("等 App Store 加载后，可以重新检查并继续。"))
+                transition(.needsInitialCheck(.init("guidance.initialCheck", defaultValue: "等 App Store 加载后，可以重新检查并继续。")))
                 return
             }
             if snapshot.state == .signedIn {
@@ -220,7 +238,7 @@ final class AccountSwitchCoordinator {
                 let afterExit = try await service.signOut(pid: snapshot.pid)
                 storeState = afterExit
                 guard afterExit == .signedOut else {
-                    transition(.needsSignOut("请处理 App Store 的退出提示，或手动退出后再继续。"))
+                    transition(.needsSignOut(.init("guidance.finishSignOut", defaultValue: "请处理 App Store 的退出提示，或手动退出后再继续。")))
                     return
                 }
             }
@@ -235,9 +253,9 @@ final class AccountSwitchCoordinator {
         guard case .needsSignOut = step, let target else { return }
         transition(.checking)
         do {
-            let snapshot = try await inspect(open: true)
+            let snapshot = try await inspect(activate: true)
             guard snapshot.state == .signedOut else {
-                transition(.needsSignOut("尚未检测到退出。请在 App Store 检查退出状态后再继续。"))
+                transition(.needsSignOut(.init("guidance.signOutUnconfirmed", defaultValue: "尚未检测到退出。请在 App Store 检查退出状态后再继续。")))
                 return
             }
             let password = await savedPassword(for: target)
@@ -253,14 +271,14 @@ final class AccountSwitchCoordinator {
         stopMonitoringLogin()
         transition(.checking)
         do {
-            let snapshot = try await inspect(open: true)
+            let snapshot = try await inspect(activate: true)
             switch snapshot.state {
             case .signedIn:
                 finishLogin()
             case .signedOut:
                 await prepare(target, pid: snapshot.pid, openIfNeeded: openIfNeeded)
             case .unknown:
-                transition(.needsSignIn("请打开 Apple 的登录表单，或在完成登录后检查状态。"))
+                transition(.needsSignIn(.init("guidance.openSignIn", defaultValue: "请打开 Apple 的登录表单，或在完成登录后检查状态。")))
                 monitorLogin()
             }
         } catch {
@@ -278,10 +296,10 @@ final class AccountSwitchCoordinator {
 
     @discardableResult
     func checkLogin() async -> LoginCheck {
-        log("手动检查 App Store 登录状态")
+        log(tr(.init("log.manualCheck", defaultValue: "手动检查 App Store 登录状态")))
         guard !step.isWorking else {
-            let result = LoginCheck.unavailable("正在处理 App Store，请稍后再试。")
-            log("检查结果 · \(result.message)")
+            let result = LoginCheck.unavailable(.init("error.busy", defaultValue: "正在处理 App Store，请稍后再试。"))
+            log(tr(.init("log.checkResult", defaultValue: "检查结果 · \(tr(result.message))")))
             return result
         }
         let previous = step
@@ -289,7 +307,7 @@ final class AccountSwitchCoordinator {
         transition(.verifying)
         let result: LoginCheck
         do {
-            let snapshot = try await inspect(open: false)
+            let snapshot = try await inspect(activate: false)
             result = .state(snapshot.state)
             if pendingLogin && snapshot.state == .signedIn {
                 finishLogin()
@@ -300,7 +318,7 @@ final class AccountSwitchCoordinator {
             result = .unavailable(message(for: error))
             step = previous
         }
-        log("检查结果 · \(result.message)")
+        log(tr(.init("log.checkResult", defaultValue: "检查结果 · \(tr(result.message))")))
         return result
     }
 
@@ -316,10 +334,10 @@ final class AccountSwitchCoordinator {
         transition(.readingKeychain)
         do {
             let password = try await service.readSavedPassword(id: id)
-            log("自动登录 · 已读取本机钥匙串")
+            log(tr(.init("log.keychainRead", defaultValue: "自动登录 · 已读取本机钥匙串")))
             return password
         } catch {
-            log("自动登录 · 无法读取本机钥匙串，将尝试仅预填邮箱")
+            log(tr(.init("log.keychainReadFailed", defaultValue: "自动登录 · 无法读取本机钥匙串，将尝试仅预填邮箱")))
             return nil
         }
     }
@@ -369,15 +387,15 @@ final class AccountSwitchCoordinator {
         target = nil
         storeState = .signedIn
         checkError = nil
-        log("检测到 App Store 已登录 · 本次切换结束")
+        log(tr(.init("log.switchFinished", defaultValue: "检测到 App Store 已登录 · 本次切换结束")))
         transition(.idle)
     }
 
-    private func inspect(open: Bool) async throws -> StoreSnapshot {
+    private func inspect(activate: Bool) async throws -> StoreSnapshot {
         storeState = nil
         checkError = nil
         do {
-            let snapshot = try await service.inspect(open: open)
+            let snapshot = try await service.inspect(activate: activate)
             storeState = snapshot.state
             return snapshot
         } catch {
@@ -388,10 +406,11 @@ final class AccountSwitchCoordinator {
 
     private func transition(_ step: Step) {
         self.step = step
-        log("状态 · \(step.title)")
+        log(tr(.init("log.state", defaultValue: "状态 · \(tr(step.title))")))
+        if let guidance = step.guidance { log(tr(guidance)) }
     }
 
-    private func message(for error: Error) -> String {
-        (error as? StoreAutomationError)?.message ?? "操作未能完成，请在 App Store 检查后重试。"
+    private func message(for error: Error) -> LocalizedStringResource {
+        (error as? StoreAutomationError)?.message ?? .init("error.operationFailed", defaultValue: "操作未能完成，请在 App Store 检查后重试。")
     }
 }
