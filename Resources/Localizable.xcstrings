@@ -161,6 +161,22 @@
         }
       }
     },
+    "accounts.duplicateEmail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Apple Account email already exists."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该 Apple Account 邮箱已存在。"
+          }
+        }
+      }
+    },
     "accounts.email" : {
       "localizations" : {
         "en" : {
@@ -241,6 +257,38 @@
         }
       }
     },
+    "accounts.password.draftDetails" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account: %@\nClick Save in the account list to store the password in the local Keychain and enable auto sign-in."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "账号：%@\n点击账号列表的「保存」后，密码才会存入本机钥匙串，并启用自动登录。"
+          }
+        }
+      }
+    },
+    "accounts.password.removeHint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click Save to turn off auto sign-in and remove the password."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击「保存」后关闭自动登录并移除密码。"
+          }
+        }
+      }
+    },
     "accounts.region" : {
       "localizations" : {
         "en" : {
@@ -273,18 +321,130 @@
         }
       }
     },
-    "accounts.savingPassword" : {
+    "accounts.save.cleanupDetails" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saving password…"
+            "value" : "Your account changes were saved. Old password copies for these accounts could not be removed from the local Keychain. StoreSwitch no longer uses these copies:\n%@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在保存密码…"
+            "value" : "账号修改已保存。以下账号的旧密码副本未能从本机钥匙串移除，StoreSwitch 不会再使用这些副本：\n%@"
+          }
+        }
+      }
+    },
+    "accounts.save.cleanupTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some old passwords remain"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "部分旧密码未清理"
+          }
+        }
+      }
+    },
+    "accounts.save.failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save account changes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法保存账号修改"
+          }
+        }
+      }
+    },
+    "accounts.save.failedDetails" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your changes were not applied. Your draft is still available. The passwords for these accounts need to be updated:\n%1$@\n\n%2$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有应用本次修改，草稿仍在。以下账号的密码需要更新：\n%1$@\n\n%2$@"
+          }
+        }
+      }
+    },
+    "accounts.save.hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account and password changes take effect when you save."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "账号和密码修改在保存后生效。"
+          }
+        }
+      }
+    },
+    "accounts.save.inProgress" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saving account changes…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在保存账号修改…"
+          }
+        }
+      }
+    },
+    "accounts.save.reopen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "StoreSwitch has changed on disk. Reopen the app and try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磁盘上的 StoreSwitch 已更新。请重新打开应用后重试。"
+          }
+        }
+      }
+    },
+    "accounts.save.retryCleanup" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry Cleanup"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试清理"
           }
         }
       }
@@ -301,6 +461,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "设置密码…"
+          }
+        }
+      }
+    },
+    "accounts.unsaved.details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unsaved account and password changes will be lost when you close this window."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未保存的账号和密码修改将在关闭窗口时丢失。"
+          }
+        }
+      }
+    },
+    "accounts.unsaved.discard" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard Changes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放弃修改"
+          }
+        }
+      }
+    },
+    "accounts.unsaved.keepEditing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Editing"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续编辑"
+          }
+        }
+      }
+    },
+    "accounts.unsaved.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save account changes?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要保存账号修改吗？"
           }
         }
       }
@@ -353,6 +577,22 @@
         }
       }
     },
+    "common.confirm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定"
+          }
+        }
+      }
+    },
     "common.done" : {
       "localizations" : {
         "en" : {
@@ -397,22 +637,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "好"
-          }
-        }
-      }
-    },
-    "common.reopen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reopen"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重新打开"
           }
         }
       }
@@ -769,22 +993,6 @@
         }
       }
     },
-    "keychain.enable" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save to Keychain and Enable"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "存入钥匙串并启用"
-          }
-        }
-      }
-    },
     "keychain.enterPassword" : {
       "localizations" : {
         "en" : {
@@ -977,102 +1185,6 @@
         }
       }
     },
-    "keychain.removeFailed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn’t Remove Password"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法移除账号密码"
-          }
-        }
-      }
-    },
-    "keychain.reopen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reopen StoreSwitch"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "需要重新打开 StoreSwitch"
-          }
-        }
-      }
-    },
-    "keychain.reopenDetails" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "StoreSwitch has been updated on disk. Reopen the app before accessing the keychain. You’ll need to reenter any unsaved account changes."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "磁盘上的 StoreSwitch 已更新。请重新打开应用，再访问钥匙串。账号列表中未保存的修改需要重新填写。"
-          }
-        }
-      }
-    },
-    "keychain.reopenFailed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn’t Reopen StoreSwitch"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法重新打开 StoreSwitch"
-          }
-        }
-      }
-    },
-    "keychain.reopenFailedDetails" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When the build finishes, quit StoreSwitch and open the new build in Finder."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请在构建完成后退出 StoreSwitch，再从访达打开新构建。"
-          }
-        }
-      }
-    },
-    "keychain.saveFailed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn’t Save Password"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法保存密码"
-          }
-        }
-      }
-    },
     "keychain.setup" : {
       "localizations" : {
         "en" : {
@@ -1085,22 +1197,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "设置自动登录密码"
-          }
-        }
-      }
-    },
-    "keychain.setupDetails" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Account: %@\nYour password is stored in the local keychain. When you choose this account from the menu, StoreSwitch will try to sign in to the App Store."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "账号：%@\n密码仅存于本机钥匙串。以后从菜单选择此账号时，StoreSwitch 会尝试在系统 App Store 中提交登录。"
           }
         }
       }
@@ -1889,22 +1985,6 @@
         }
       }
     },
-    "log.axWindowsAmbiguous" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Window scope is ambiguous or unreadable · App Store AXWindows=%lld"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "窗口范围不唯一或不可读 · App Store AXWindows=%lld"
-          }
-        }
-      }
-    },
     "log.axWindowScanLimit" : {
       "localizations" : {
         "en" : {
@@ -1949,6 +2029,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "窗口 AX 树（最多 45 个普通节点，另列已匹配节点）"
+          }
+        }
+      }
+    },
+    "log.axWindowsAmbiguous" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Window scope is ambiguous or unreadable · App Store AXWindows=%lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "窗口范围不唯一或不可读 · App Store AXWindows=%lld"
           }
         }
       }
@@ -2102,13 +2198,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Auto sign-in · Couldn’t read the local keychain. Will try filling only the email address."
+            "value" : "Auto sign-in · Could not read the local Keychain"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "自动登录 · 无法读取本机钥匙串，将尝试仅预填邮箱"
+            "value" : "自动登录 · 无法读取本机钥匙串"
           }
         }
       }
@@ -3678,6 +3774,102 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "切换 App Store 账号？"
+          }
+        }
+      }
+    },
+    "switch.manual.beforeSignOut" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The saved password could not be read. The current account is still signed in. If you continue, StoreSwitch will sign it out and you'll need to sign in to %@ manually in the App Store."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取已保存的密码，当前账号仍保持登录。继续将退出当前账号，你需要在 App Store 手动登录 %@。"
+          }
+        }
+      }
+    },
+    "switch.manual.cancel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel Switch"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消切换"
+          }
+        }
+      }
+    },
+    "switch.manual.continue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue with Manual Sign-In"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续手动登录"
+          }
+        }
+      }
+    },
+    "switch.manual.signedOut" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The App Store is signed out and the saved password could not be read. Sign in to the target account manually in the App Store."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 当前未登录，且无法读取已保存的密码。请在 App Store 手动登录目标账号。"
+          }
+        }
+      }
+    },
+    "switch.manual.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual sign-in required"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要手动登录"
+          }
+        }
+      }
+    },
+    "switch.notice.target" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target account: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标账号：%@"
           }
         }
       }

@@ -25,17 +25,6 @@ struct PasswordKeychain {
         self.items = items
     }
 
-    func save(_ password: String, id: UUID) throws {
-        try Self.lock.withLock {
-            var vault = try readVault()
-            vault[id.uuidString] = password
-            try writeVault(vault)
-            // A replaced legacy password is no longer needed. The new value is
-            // already durable, and an explicit removal will try both entries.
-            try? items.remove(.legacy(id))
-        }
-    }
-
     func read(_ id: UUID) throws -> ReadResult {
         try Self.lock.withLock {
             var vault = try readVault()
@@ -62,15 +51,28 @@ struct PasswordKeychain {
         }
     }
 
-    func remove(_ id: UUID) throws {
+    func updateVault(setting: [UUID: String], removing: Set<UUID>) throws {
+        guard !setting.isEmpty || !removing.isEmpty else { return }
         try Self.lock.withLock {
             var vault = try readVault()
-            // Remove the fallback first so a deleted password cannot reappear.
-            try items.remove(.legacy(id))
-            if vault.removeValue(forKey: id.uuidString) != nil {
-                // Keep the same item (even when empty) so it keeps its ACL.
+            let original = vault
+            for id in removing { vault.removeValue(forKey: id.uuidString) }
+            for (id, password) in setting { vault[id.uuidString] = password }
+            if vault != original {
+                // Commit the entire active vault in one update, preserving its ACL.
                 try writeVault(vault)
             }
+        }
+    }
+
+    func removeLegacyCopies(_ ids: Set<UUID>) -> [UUID: Error] {
+        Self.lock.withLock {
+            var failures: [UUID: Error] = [:]
+            for id in ids {
+                do { try items.remove(.legacy(id)) }
+                catch { failures[id] = error }
+            }
+            return failures
         }
     }
 

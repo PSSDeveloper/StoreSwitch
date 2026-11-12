@@ -129,16 +129,16 @@ final class AccountSwitchCoordinator {
     }
 
     enum Step: Equatable {
-        case idle, checking, confirmExit, readingKeychain, signingOut, preparing
+        case idle, checking, confirmExit, readingKeychain, confirmManualFallback, signingOut, preparing
         case awaitingAuthentication(LoginPreparation)
-        case verifying, cancelled
+        case verifying, cancelled, needsManualLogin
         case needsInitialCheck(LocalizedStringResource)
         case needsSignOut(LocalizedStringResource)
         case needsSignIn(LocalizedStringResource)
 
         var isWorking: Bool {
             switch self {
-            case .checking, .confirmExit, .readingKeychain, .signingOut, .preparing, .verifying: return true
+            case .checking, .confirmExit, .readingKeychain, .confirmManualFallback, .signingOut, .preparing, .verifying: return true
             default: return false
             }
         }
@@ -156,6 +156,8 @@ final class AccountSwitchCoordinator {
             case .checking, .verifying: return .init("state.checking", defaultValue: "正在检查登录状态…")
             case .confirmExit: return .init("state.confirmExit", defaultValue: "等待确认退出")
             case .readingKeychain: return .init("state.readingKeychain", defaultValue: "正在读取钥匙串…")
+            case .confirmManualFallback, .needsManualLogin:
+                return .init("switch.manual.title", defaultValue: "需要手动登录")
             case .signingOut: return .init("state.signingOut", defaultValue: "正在退出登录…")
             case .preparing: return .init("state.preparing", defaultValue: "正在准备登录…")
             case .awaitingAuthentication(.filled), .awaitingAuthentication(.manual), .awaitingAuthentication(.finishManually):
@@ -174,6 +176,8 @@ final class AccountSwitchCoordinator {
             case .needsInitialCheck(let detail), .needsSignOut(let detail), .needsSignIn(let detail): return detail
             case .readingKeychain:
                 return .init("guidance.keychain", defaultValue: "如果 macOS 请求访问钥匙串，请在系统提示中确认。")
+            case .needsManualLogin:
+                return .init("switch.manual.signedOut", defaultValue: "App Store 当前未登录，且无法读取已保存的密码。请在 App Store 手动登录目标账号。")
             case .awaitingAuthentication(.filled):
                 return .init("guidance.filled", defaultValue: "已尝试预填邮箱。请核对后在 App Store 登录。")
             case .awaitingAuthentication(.writeUncertain):
@@ -193,19 +197,27 @@ final class AccountSwitchCoordinator {
     private(set) var checkError: LocalizedStringResource?
     private let service: any StoreAutomating
     private let log: (String) -> Void
+    private let confirmManualFallback: (StoreAccount) -> Bool
+    private let updateManualLoginRecovery: (StoreAccount?) -> Void
 
     private let observationInterval: Duration
     private var loginMonitor: Task<Void, Never>?
+    private var choseManualLogin = false
 
-    init(service: any StoreAutomating, observationInterval: Duration = .seconds(2), log: @escaping (String) -> Void) {
+    init(service: any StoreAutomating, observationInterval: Duration = .seconds(2),
+         confirmManualFallback: @escaping (StoreAccount) -> Bool = { _ in false },
+         updateManualLoginRecovery: @escaping (StoreAccount?) -> Void = { _ in }, log: @escaping (String) -> Void) {
         self.service = service
         self.observationInterval = observationInterval
+        self.confirmManualFallback = confirmManualFallback
+        self.updateManualLoginRecovery = updateManualLoginRecovery
         self.log = log
     }
 
     func start(_ account: StoreAccount, confirmExit: (StoreAccount) -> Bool) async {
         guard step.canSelect, StoreAccount.validEmail(account.email) else { return }
         target = account
+        choseManualLogin = false
         log(tr(.init("log.switchStarted", defaultValue: "开始切换 · 地区 \(account.region.title(in: .current))")))
         await checkBeforeSwitch(account, confirmExit: confirmExit)
     }
@@ -231,7 +243,23 @@ final class AccountSwitchCoordinator {
                     return
                 }
             }
-            let password = await savedPassword(for: account)
+            let password: String?
+            do {
+                password = try await savedPassword(for: account)
+            } catch {
+                guard snapshot.state == .signedIn else {
+                    offerManualLogin(for: account)
+                    return
+                }
+                transition(.confirmManualFallback)
+                guard confirmManualFallback(account) else {
+                    target = nil
+                    transition(.cancelled)
+                    return
+                }
+                choseManualLogin = true
+                password = nil
+            }
             if snapshot.state == .signedIn {
                 transition(.signingOut)
                 storeState = nil
@@ -258,9 +286,15 @@ final class AccountSwitchCoordinator {
                 transition(.needsSignOut(.init("guidance.signOutUnconfirmed", defaultValue: "尚未检测到退出。请在 App Store 检查退出状态后再继续。")))
                 return
             }
-            let password = await savedPassword(for: target)
+            let password: String?
+            do {
+                password = try await savedPassword(for: target)
+            } catch {
+                offerManualLogin(for: target)
+                return
+            }
             await prepare(target, pid: snapshot.pid, openIfNeeded: true, password: password,
-                          restoreFocus: target.passwordID != nil)
+                          restoreFocus: password != nil)
         } catch {
             transition(.needsSignOut(message(for: error)))
         }
@@ -268,6 +302,7 @@ final class AccountSwitchCoordinator {
 
     func retryLogin(openIfNeeded: Bool) async {
         guard let target, isWaitingForLogin else { return }
+        if step == .needsManualLogin { updateManualLoginRecovery(nil) }
         stopMonitoringLogin()
         transition(.checking)
         do {
@@ -289,7 +324,7 @@ final class AccountSwitchCoordinator {
 
     var isWaitingForLogin: Bool {
         switch step {
-        case .awaitingAuthentication, .needsSignIn: return true
+        case .awaitingAuthentication, .needsSignIn, .needsManualLogin: return true
         default: return false
         }
     }
@@ -324,22 +359,29 @@ final class AccountSwitchCoordinator {
 
     func end() {
         guard !step.isWorking, !step.canSelect else { return }
+        if step == .needsManualLogin { updateManualLoginRecovery(nil) }
         stopMonitoringLogin()
         target = nil
         transition(.cancelled)
     }
 
-    private func savedPassword(for account: StoreAccount) async -> String? {
-        guard let id = account.passwordID else { return nil }
+    private func savedPassword(for account: StoreAccount) async throws -> String? {
+        guard !choseManualLogin, let id = account.passwordID else { return nil }
         transition(.readingKeychain)
         do {
             let password = try await service.readSavedPassword(id: id)
             log(tr(.init("log.keychainRead", defaultValue: "自动登录 · 已读取本机钥匙串")))
             return password
         } catch {
-            log(tr(.init("log.keychainReadFailed", defaultValue: "自动登录 · 无法读取本机钥匙串，将尝试仅预填邮箱")))
-            return nil
+            log(tr(.init("log.keychainReadFailed", defaultValue: "自动登录 · 无法读取本机钥匙串")))
+            throw error
         }
+    }
+
+    private func offerManualLogin(for account: StoreAccount) {
+        transition(.needsManualLogin)
+        monitorLogin()
+        updateManualLoginRecovery(account)
     }
 
     private func prepare(_ account: StoreAccount, pid: pid_t, openIfNeeded: Bool,
@@ -389,6 +431,7 @@ final class AccountSwitchCoordinator {
         checkError = nil
         log(tr(.init("log.switchFinished", defaultValue: "检测到 App Store 已登录 · 本次切换结束")))
         transition(.idle)
+        updateManualLoginRecovery(nil)
     }
 
     private func inspect(activate: Bool) async throws -> StoreSnapshot {
