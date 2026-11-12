@@ -103,9 +103,9 @@ struct KeychainFailure: Error {
         case errSecNoDefaultKeychain, errSecNotAvailable:
             return tr(.init("keychain.unavailable", defaultValue: "macOS 无法访问默认钥匙串。请在「钥匙串访问」中确认登录钥匙串可用后重试。"))
         case errSecDecode:
-            return tr(.init("keychain.decodeFailed", defaultValue: "无法读取钥匙串中的密码记录。可查看 StoreSwitch 的操作日志。"))
+            return tr(.init("keychain.decodeFailed", defaultValue: "无法读取钥匙串中的密码记录。请重新打开 StoreSwitch 后重试。"))
         default:
-            return tr(.init("keychain.operationFailed", defaultValue: "钥匙串操作失败（\(status)）。可查看 StoreSwitch 的操作日志。"))
+            return tr(.init("keychain.operationFailed", defaultValue: "钥匙串操作失败。请确认登录钥匙串已解锁，再重试。"))
         }
     }
 }

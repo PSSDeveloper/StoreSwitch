@@ -170,7 +170,9 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
         }
         let hotkey = add(tr(.init("menu.shortcut", defaultValue: "菜单快捷键（⌃⌥S）")), #selector(toggleShortcut))
         hotkey.state = shortcut.isRegistered ? .on : .off
+#if DEBUG
         add(tr(.init("menu.viewLog", defaultValue: "查看日志")), #selector(showLog), key: "l")
+#endif
         menu.addItem(languageMenuItem())
         menu.addItem(.separator())
         add(tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), #selector(showAbout), enabled: !step.isWorking)
@@ -513,7 +515,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
         let failure = error as? KeychainFailure
         append([failure?.logMessage ?? tr(.init("log.keychainFailed", defaultValue: "钥匙串 · 密码操作失败"))])
         guard failure?.status == errSecCSStaticCodeChanged else {
-            showMessage(title, failure?.userMessage ?? tr(.init("common.viewLogAndRetry", defaultValue: "请查看 StoreSwitch 的操作日志后重试。")))
+            showMessage(title, failure?.userMessage ?? tr(.init("common.tryAgain", defaultValue: "请稍后重试。")))
             return
         }
 
@@ -622,7 +624,9 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
         }
         let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "StoreSwitch"
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? tr(.init("common.unknown", defaultValue: "未知"))
-        aboutWindow = showWindow(tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), content: AboutView(name: name, version: version))
+        aboutWindow = showWindow(tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), content: AboutView(name: name, version: version) { [weak self] in
+            self?.showLog()
+        })
     }
 
     @objc private func quit() {
@@ -638,7 +642,9 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
         app.addItem(.separator())
         app.addItem(withTitle: tr(.init("menu.manageAccounts", defaultValue: "管理账号…")), action: #selector(showAccounts), keyEquivalent: ",").target = self
         app.addItem(withTitle: tr(.init("menu.checkSignIn", defaultValue: "检查登录状态")), action: #selector(checkLogin), keyEquivalent: "r").target = self
+#if DEBUG
         app.addItem(withTitle: tr(.init("menu.viewLog", defaultValue: "查看日志")), action: #selector(showLog), keyEquivalent: "l").target = self
+#endif
         app.addItem(languageMenuItem())
         app.addItem(.separator())
         app.addItem(withTitle: tr(.init("menu.quit", defaultValue: "退出 StoreSwitch")), action: #selector(quit), keyEquivalent: "q").target = self
@@ -670,6 +676,7 @@ private struct AboutView: View {
     @AppStorage(AppLanguage.preferenceKey) private var language: AppLanguage = .preferred
     let name: String
     let version: String
+    let showLog: () -> Void
 
     var body: some View {
         VStack(spacing: 10) {
@@ -683,6 +690,10 @@ private struct AboutView: View {
             Text(language.text(.init("about.description", defaultValue: "在 macOS 菜单栏快速切换 App Store 账号。")))
                 .multilineTextAlignment(.center)
                 .padding(.top, 6)
+            Button(language.text(.init("about.diagnosticLog", defaultValue: "诊断日志")), action: showLog)
+                .buttonStyle(.link)
+                .font(.callout)
+                .padding(.top, 4)
         }
         .padding(28)
         .frame(width: 360)
