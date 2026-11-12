@@ -40,15 +40,20 @@ final class AppStoreAutomation: StoreAutomating {
 
     func readSavedPassword(id: UUID) async throws -> String {
         // SecItemCopyMatching can wait for the system authorization dialog.
-        let result: PasswordKeychain.ReadResult = try await withCheckedThrowingContinuation { continuation in
-            worker.async {
-                continuation.resume(with: Result { try PasswordKeychain().read(id) })
+        do {
+            let result: PasswordKeychain.ReadResult = try await withCheckedThrowingContinuation { continuation in
+                worker.async {
+                    continuation.resume(with: Result { try PasswordKeychain().read(id) })
+                }
             }
+            if result.migrationPending {
+                log(["钥匙串 · 旧密码可用，合并保存暂未完成"])
+            }
+            return result.password
+        } catch let failure as KeychainFailure {
+            log([failure.logMessage])
+            throw failure
         }
-        if result.migrationPending {
-            log(["钥匙串 · 旧密码可用，合并保存暂未完成"])
-        }
-        return result.password
     }
 
     func prepareLogin(pid: pid_t, email: String, openIfNeeded: Bool, password: String?,

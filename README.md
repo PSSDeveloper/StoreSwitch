@@ -12,7 +12,7 @@ StoreSwitch 是面向个人自用的 macOS 菜单栏应用。它可保存多个 
      -derivedDataPath .build/DerivedData build
    ```
 
-   输出为 `.build/DerivedData/Build/Products/Release/StoreSwitch.app`。应用启动后在菜单栏显示双向箭头，Dock 中没有图标。最低系统版本为 macOS 14。
+   输出为 `.build/DerivedData/Build/Products/Release/StoreSwitch.app`。如果该路径下的应用正在运行，请先从菜单栏退出再构建。应用启动后在菜单栏显示双向箭头，Dock 中没有图标。最低系统版本为 macOS 14。
 
 2. 在菜单中打开「管理账号」，点「添加账号」填写邮箱并选择地区。不选地区时显示 🌐「未指定」，同一地区可以保存多个账号。点行末的删除按钮并保存即可移除账号。首次使用时点「辅助功能授权」，在系统设置中为当前构建的 **StoreSwitch** 开启权限。POC 的授权与此应用独立；重新构建后如果授权失效，可移除旧条目、添加当前构建，再重启应用。
 3. 如需自动登录，保存邮箱后在「管理账号」为该账号点「设置密码」，再点「存入钥匙串并启用」。密码只存于本机 macOS 钥匙串，不使用 iCloud 同步。点「移除密码」可关闭该账号的自动登录。更换邮箱或移除账号时会删除原来的钥匙串记录。

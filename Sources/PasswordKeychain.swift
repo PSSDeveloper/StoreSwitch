@@ -43,10 +43,10 @@ struct PasswordKeychain {
                 return ReadResult(password: password, migrationPending: false)
             }
             guard let data = try items.read(.legacy(id)) else {
-                throw KeychainFailure(status: errSecItemNotFound)
+                throw KeychainFailure(operation: "查找旧密码", status: errSecItemNotFound)
             }
             guard let password = String(data: data, encoding: .utf8), !password.isEmpty else {
-                throw KeychainFailure(status: errSecDecode)
+                throw KeychainFailure(operation: "解码旧密码", status: errSecDecode)
             }
             vault[id.uuidString] = password
             do {
@@ -76,8 +76,10 @@ struct PasswordKeychain {
 
     private func readVault() throws -> [String: String] {
         guard let data = try items.read(.vault) else { return [:] }
-        let vault = try JSONDecoder().decode([String: String].self, from: data)
-        guard vault.values.allSatisfy({ !$0.isEmpty }) else { throw KeychainFailure(status: errSecDecode) }
+        guard let vault = try? JSONDecoder().decode([String: String].self, from: data),
+              vault.values.allSatisfy({ !$0.isEmpty }) else {
+            throw KeychainFailure(operation: "解码密码库", status: errSecDecode)
+        }
         return vault
     }
 
@@ -86,8 +88,26 @@ struct PasswordKeychain {
     }
 }
 
-private struct KeychainFailure: Error {
+struct KeychainFailure: Error {
+    let operation: String
     let status: OSStatus
+
+    var logMessage: String { "钥匙串 · \(operation)失败（\(status)）" }
+
+    var userMessage: String {
+        switch status {
+        case errSecUserCanceled:
+            return "已取消系统钥匙串授权。重试时请在 macOS 提示中确认。"
+        case errSecAuthFailed, errSecInteractionNotAllowed:
+            return "macOS 未授权此次操作。请确认登录钥匙串已解锁，并在系统提示中允许 StoreSwitch 访问。"
+        case errSecNoDefaultKeychain, errSecNotAvailable:
+            return "macOS 无法访问默认钥匙串。请在「钥匙串访问」中确认登录钥匙串可用后重试。"
+        case errSecDecode:
+            return "无法读取钥匙串中的密码记录。可查看 StoreSwitch 的操作日志。"
+        default:
+            return "钥匙串操作失败（\(status)）。可查看 StoreSwitch 的操作日志。"
+        }
+    }
 }
 
 struct LocalPasswordItems: PasswordItemStoring {
@@ -96,6 +116,17 @@ struct LocalPasswordItems: PasswordItemStoring {
     init(service: String? = nil) {
         let bundleID = Bundle.main.bundleIdentifier ?? "local.storeswitch"
         self.service = service ?? bundleID + ".app-store-password"
+    }
+
+    static func checkForRebuild() throws {
+        var runningCode: SecCode?
+        guard SecCodeCopySelf([], &runningCode) == errSecSuccess, let runningCode else { return }
+        let status = SecCodeCheckValidity(runningCode, [], nil)
+        // Compare the running process with its current on-disk bundle. A rebuild
+        // can replace it without exiting the process that macOS is authorizing.
+        if status == errSecCSStaticCodeChanged {
+            throw KeychainFailure(operation: "检查正在运行的应用签名", status: status)
+        }
     }
 
     private func query(_ item: PasswordItem) -> [String: Any] {
@@ -119,30 +150,45 @@ struct LocalPasswordItems: PasswordItemStoring {
     }
 
     func read(_ item: PasswordItem) throws -> Data? {
+        try Self.checkForRebuild()
         var request = query(item)
         request[kSecReturnData as String] = true
         request[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: CFTypeRef?
         let status = SecItemCopyMatching(request as CFDictionary, &result)
         if status == errSecItemNotFound { return nil }
-        guard status == errSecSuccess else { throw KeychainFailure(status: status) }
-        guard let data = result as? Data else { throw KeychainFailure(status: errSecDecode) }
+        try Self.check(status, operation: "读取密码记录")
+        guard let data = result as? Data else {
+            throw KeychainFailure(operation: "读取密码数据", status: errSecDecode)
+        }
         return data
     }
 
     func write(_ data: Data, to item: PasswordItem) throws {
+        try Self.checkForRebuild()
         var request = query(item)
         let secret = [kSecValueData as String: data]
         let updated = SecItemUpdate(request as CFDictionary, secret as CFDictionary)
-        if updated == errSecSuccess { return }
-        guard updated == errSecItemNotFound else { throw KeychainFailure(status: updated) }
-        request[kSecValueData as String] = data
-        let added = SecItemAdd(request as CFDictionary, nil)
-        guard added == errSecSuccess else { throw KeychainFailure(status: added) }
+        if updated == errSecItemNotFound {
+            request[kSecValueData as String] = data
+            try Self.check(SecItemAdd(request as CFDictionary, nil), operation: "新增密码记录")
+        } else {
+            try Self.check(updated, operation: "更新密码记录")
+        }
     }
 
     func remove(_ item: PasswordItem) throws {
+        try Self.checkForRebuild()
         let status = SecItemDelete(query(item) as CFDictionary)
-        guard status == errSecSuccess || status == errSecItemNotFound else { throw KeychainFailure(status: status) }
+        if status != errSecItemNotFound {
+            try Self.check(status, operation: "移除密码记录")
+        }
+    }
+
+    private static func check(_ status: OSStatus, operation: String) throws {
+        guard status != errSecSuccess else { return }
+        // The bundle may also have been replaced between the preflight and SecItem.
+        try checkForRebuild()
+        throw KeychainFailure(operation: operation, status: status)
     }
 }

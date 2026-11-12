@@ -1,6 +1,7 @@
 import AppKit
 import ApplicationServices
 import CoreServices
+import Security
 import SwiftUI
 import Carbon.HIToolbox
 
@@ -20,6 +21,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var checkWindow: NSWindow?
     private var checkingFromMenu = false
     private var accountWindow: NSWindow?
+    private var savingPassword = false
     private var logWindow: NSWindow?
     private var aboutWindow: NSWindow?
     private var menuIsOpen = false
@@ -66,7 +68,11 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if registration != noErr {
             append(["应用包登记失败 · \(registration)"])
         }
-        if accounts.isEmpty { showAccounts() }
+        if CommandLine.arguments.contains("--manage-accounts") {
+            Task { showAccounts() }
+        } else if accounts.isEmpty {
+            showAccounts()
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
@@ -108,7 +114,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let mode = account.passwordID == nil ? "" : " · 自动登录"
             let key = index < 9 ? String(index + 1) : ""
             let item = add("切换到 \(account.label)\(mode)…", #selector(selectAccount(_:)),
-                           key: key, enabled: step.canSelect)
+                           key: key, enabled: step.canSelect && !savingPassword)
             item.representedObject = account.id.uuidString
         }
 
@@ -142,7 +148,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         add("操作日志…", #selector(showLog), key: "l")
         menu.addItem(.separator())
         add("关于 StoreSwitch", #selector(showAbout), enabled: !step.isWorking)
-        add("退出 StoreSwitch", #selector(quit), key: "q", enabled: !step.isWorking)
+        add("退出 StoreSwitch", #selector(quit), key: "q", enabled: !step.isWorking && !savingPassword)
     }
 
     @discardableResult
@@ -155,7 +161,8 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func selectAccount(_ sender: NSMenuItem) {
-        guard NSApp.modalWindow == nil, coordinator.step.canSelect, let id = sender.representedObject as? String,
+        guard NSApp.modalWindow == nil, coordinator.step.canSelect, !savingPassword,
+              let id = sender.representedObject as? String,
               let account = accounts.first(where: { $0.id.uuidString == id }) else { return }
         guard AXIsProcessTrusted() else {
             showPermissionGuide()
@@ -260,7 +267,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func showAccounts() {
         guard coordinator.step.canSelect else { return }
-        if let accountWindow, accountWindow.isVisible {
+        if let accountWindow, accountWindow.isVisible || savingPassword {
             NSApp.activate()
             accountWindow.makeKeyAndOrderFront(nil)
             return
@@ -277,7 +284,8 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func saveAccounts(_ entries: [StoreAccount], form: AccountDrafts?) {
-        guard coordinator.step.canSelect, entries.allSatisfy({ StoreAccount.validEmail($0.email) }) else { return }
+        guard coordinator.step.canSelect, !savingPassword,
+              entries.allSatisfy({ StoreAccount.validEmail($0.email) }) else { return }
         let newEmails = Dictionary(uniqueKeysWithValues: entries.map { ($0.id, $0.email) })
         for account in accounts where newEmails[account.id] != account.email {
             guard removePassword(account.id, form: form) else { return }
@@ -303,8 +311,14 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func editPassword(_ accountID: UUID, form: AccountDrafts?) {
-        guard coordinator.step.canSelect, let index = accounts.firstIndex(where: { $0.id == accountID }) else { return }
-        let account = accounts[index]
+        guard coordinator.step.canSelect, !savingPassword,
+              let account = accounts.first(where: { $0.id == accountID }) else { return }
+        do {
+            try LocalPasswordItems.checkForRebuild()
+        } catch {
+            showKeychainFailure("无法保存密码", error)
+            return
+        }
         let alert = NSAlert()
         alert.messageText = "设置自动登录密码"
         alert.informativeText = "账号：\(account.email)\n密码仅存于本机钥匙串。以后从菜单选择此账号时，StoreSwitch 会尝试在系统 App Store 中提交登录。"
@@ -317,25 +331,39 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         alert.window.initialFirstResponder = field
         defer { field.stringValue = "" }
         guard alert.runModal() == .alertFirstButtonReturn else { return }
-        guard !field.stringValue.isEmpty else {
+        let password = field.stringValue
+        guard !password.isEmpty else {
             showMessage("请输入密码", "密码留空时不会保存。")
             return
         }
         let id = account.passwordID ?? UUID()
-        do {
-            try passwords.save(field.stringValue, id: id)
-            var updates = accounts
-            updates[index].passwordID = id
-            persistAccounts(updates)
-            form?.updatePassword(id, for: accountID)
-        } catch {
-            showMessage("无法保存密码", "请确认本机钥匙串已解锁并允许 StoreSwitch 访问。")
+        savingPassword = true
+        form?.isSavingPassword = true
+        Task {
+            defer {
+                savingPassword = false
+                form?.isSavingPassword = false
+            }
+            do {
+                // macOS can ask for authorization while the vault is read or updated.
+                try await Task.detached(priority: .userInitiated) {
+                    try PasswordKeychain().save(password, id: id)
+                }.value
+                var updates = accounts
+                if let index = updates.firstIndex(where: { $0.id == accountID }) {
+                    updates[index].passwordID = id
+                    persistAccounts(updates)
+                    form?.updatePassword(id, for: accountID)
+                }
+            } catch {
+                showKeychainFailure("无法保存密码", error)
+            }
         }
     }
 
     @discardableResult
     private func removePassword(_ accountID: UUID, form: AccountDrafts?) -> Bool {
-        guard coordinator.step.canSelect else { return false }
+        guard coordinator.step.canSelect, !savingPassword else { return false }
         guard let index = accounts.firstIndex(where: { $0.id == accountID }),
               let id = accounts[index].passwordID else { return true }
         do {
@@ -346,8 +374,39 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             form?.updatePassword(nil, for: accountID)
             return true
         } catch {
-            showMessage("无法移除账号密码", "请确认本机钥匙串已解锁并允许 StoreSwitch 访问。")
+            showKeychainFailure("无法移除账号密码", error)
             return false
+        }
+    }
+
+    private func showKeychainFailure(_ title: String, _ error: Error) {
+        let failure = error as? KeychainFailure
+        append([failure?.logMessage ?? "钥匙串 · 密码操作失败"])
+        guard failure?.status == errSecCSStaticCodeChanged else {
+            showMessage(title, failure?.userMessage ?? "请查看 StoreSwitch 的操作日志后重试。")
+            return
+        }
+
+        NSApp.activate()
+        let alert = NSAlert()
+        alert.messageText = "需要重新打开 StoreSwitch"
+        alert.informativeText = "磁盘上的 StoreSwitch 已更新。请重新打开应用，再访问钥匙串。账号列表中未保存的修改需要重新填写。"
+        alert.addButton(withTitle: "重新打开")
+        alert.addButton(withTitle: "稍后")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        shortcut.stop()
+        Task {
+            let config = NSWorkspace.OpenConfiguration()
+            config.activates = true
+            config.createsNewApplicationInstance = true
+            config.arguments = ["--manage-accounts"]
+            do {
+                _ = try await NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: config)
+                NSApp.terminate(nil)
+            } catch {
+                updateShortcut()
+                showMessage("无法重新打开 StoreSwitch", "请在构建完成后退出 StoreSwitch，再从访达打开新构建。")
+            }
         }
     }
 
@@ -437,7 +496,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func quit() {
-        guard !coordinator.step.isWorking else { return }
+        guard !coordinator.step.isWorking, !savingPassword else { return }
         NSApp.terminate(nil)
     }
 
@@ -560,6 +619,7 @@ private struct OperationLogView: View {
 
 private final class AccountDrafts: ObservableObject {
     @Published var entries: [StoreAccount]
+    @Published var isSavingPassword = false
     private(set) var saved: [StoreAccount]
 
     init(_ entries: [StoreAccount]) {
@@ -668,7 +728,9 @@ private struct AccountEditor: View {
             }
             Divider()
             HStack {
-                if hasInvalidEmail {
+                if form.isSavingPassword {
+                    Text("正在保存密码…").foregroundStyle(.secondary)
+                } else if hasInvalidEmail {
                     Text("请输入有效的账号邮箱。").foregroundStyle(.red)
                 } else {
                     Text("保存邮箱后可设置自动登录。").foregroundStyle(.secondary)
@@ -686,6 +748,7 @@ private struct AccountEditor: View {
         }
         .padding(24)
         .frame(width: 750, height: 430)
+        .disabled(form.isSavingPassword)
     }
 
     private func canEditPassword(for entry: StoreAccount) -> Bool {
