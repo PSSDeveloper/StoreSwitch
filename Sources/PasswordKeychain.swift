@@ -1,53 +1,26 @@
 import Foundation
 import Security
 
-enum PasswordItem: Hashable {
-    case vault
-    case legacy(UUID)
-}
-
-protocol PasswordItemStoring {
-    func read(_ item: PasswordItem) throws -> Data?
-    func write(_ data: Data, to item: PasswordItem) throws
-    func remove(_ item: PasswordItem) throws
+protocol PasswordVaultStoring {
+    func read() throws -> Data?
+    func write(_ data: Data) throws
 }
 
 struct PasswordKeychain {
-    struct ReadResult {
-        let password: String
-        let migrationPending: Bool
-    }
-
     private static let lock = NSLock()
-    private let items: any PasswordItemStoring
+    private let storage: any PasswordVaultStoring
 
-    init(items: any PasswordItemStoring = LocalPasswordItems()) {
-        self.items = items
+    init(storage: any PasswordVaultStoring = LocalPasswordVault()) {
+        self.storage = storage
     }
 
-    func read(_ id: UUID) throws -> ReadResult {
+    func read(_ id: UUID) throws -> String {
         try Self.lock.withLock {
-            var vault = try readVault()
-            if let password = vault[id.uuidString] {
-                return ReadResult(password: password, migrationPending: false)
+            let vault = try readVault()
+            guard let password = vault[id.uuidString] else {
+                throw KeychainFailure(operation: tr(.init("keychain.operation.findPassword", defaultValue: "查找账号密码")), status: errSecItemNotFound)
             }
-            guard let data = try items.read(.legacy(id)) else {
-                throw KeychainFailure(operation: tr(.init("keychain.operation.findLegacy", defaultValue: "查找旧密码")), status: errSecItemNotFound)
-            }
-            guard let password = String(data: data, encoding: .utf8), !password.isEmpty else {
-                throw KeychainFailure(operation: tr(.init("keychain.operation.decodeLegacy", defaultValue: "解码旧密码")), status: errSecDecode)
-            }
-            vault[id.uuidString] = password
-            do {
-                try writeVault(vault)
-            } catch {
-                // The system already authorized this legacy read. Keep using it
-                // for this attempt if storing the migrated copy fails.
-                return ReadResult(password: password, migrationPending: true)
-            }
-            // Don't request another operation on the old item during sign-in.
-            // An explicit password replacement or removal cleans up that item.
-            return ReadResult(password: password, migrationPending: false)
+            return password
         }
     }
 
@@ -65,19 +38,8 @@ struct PasswordKeychain {
         }
     }
 
-    func removeLegacyCopies(_ ids: Set<UUID>) -> [UUID: Error] {
-        Self.lock.withLock {
-            var failures: [UUID: Error] = [:]
-            for id in ids {
-                do { try items.remove(.legacy(id)) }
-                catch { failures[id] = error }
-            }
-            return failures
-        }
-    }
-
     private func readVault() throws -> [String: String] {
-        guard let data = try items.read(.vault) else { return [:] }
+        guard let data = try storage.read() else { return [:] }
         guard let vault = try? JSONDecoder().decode([String: String].self, from: data),
               vault.values.allSatisfy({ !$0.isEmpty }) else {
             throw KeychainFailure(operation: tr(.init("keychain.operation.decodeVault", defaultValue: "解码密码库")), status: errSecDecode)
@@ -86,7 +48,7 @@ struct PasswordKeychain {
     }
 
     private func writeVault(_ vault: [String: String]) throws {
-        try items.write(JSONEncoder().encode(vault), to: .vault)
+        try storage.write(JSONEncoder().encode(vault))
     }
 }
 
@@ -112,15 +74,20 @@ struct KeychainFailure: Error {
     }
 }
 
-struct LocalPasswordItems: PasswordItemStoring {
-    let service: String
+struct LocalPasswordVault: PasswordVaultStoring {
+    private let query: [String: Any]
 
-    init(service: String? = nil) {
-        let bundleID = Bundle.main.bundleIdentifier ?? "local.storeswitch"
-        self.service = service ?? bundleID + ".app-store-password"
+    init() {
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.gavzen.storeswitch"
+        // Use the local, file-based macOS keychain and its default app ACL.
+        query = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: bundleID + ".app-store-password.vault",
+            kSecAttrAccount as String: "accounts-v1"
+        ]
     }
 
-    static func checkForRebuild() throws {
+    private static func checkForRebuild() throws {
         var runningCode: SecCode?
         guard SecCodeCopySelf([], &runningCode) == errSecSuccess, let runningCode else { return }
         let status = SecCodeCheckValidity(runningCode, [], nil)
@@ -131,29 +98,9 @@ struct LocalPasswordItems: PasswordItemStoring {
         }
     }
 
-    private func query(_ item: PasswordItem) -> [String: Any] {
-        // Use the local, file-based macOS keychain and its default app ACL.
-        // The vault has its own item so macOS grants access to it as a unit.
-        let account: String
-        let itemService: String
-        switch item {
-        case .vault:
-            account = "accounts-v1"
-            itemService = service + ".vault"
-        case .legacy(let id):
-            account = id.uuidString
-            itemService = service
-        }
-        return [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: itemService,
-            kSecAttrAccount as String: account
-        ]
-    }
-
-    func read(_ item: PasswordItem) throws -> Data? {
+    func read() throws -> Data? {
         try Self.checkForRebuild()
-        var request = query(item)
+        var request = query
         request[kSecReturnData as String] = true
         request[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: CFTypeRef?
@@ -166,9 +113,9 @@ struct LocalPasswordItems: PasswordItemStoring {
         return data
     }
 
-    func write(_ data: Data, to item: PasswordItem) throws {
+    func write(_ data: Data) throws {
         try Self.checkForRebuild()
-        var request = query(item)
+        var request = query
         let secret = [kSecValueData as String: data]
         let updated = SecItemUpdate(request as CFDictionary, secret as CFDictionary)
         if updated == errSecItemNotFound {
@@ -176,14 +123,6 @@ struct LocalPasswordItems: PasswordItemStoring {
             try Self.check(SecItemAdd(request as CFDictionary, nil), operation: tr(.init("keychain.operation.add", defaultValue: "新增密码记录")))
         } else {
             try Self.check(updated, operation: tr(.init("keychain.operation.update", defaultValue: "更新密码记录")))
-        }
-    }
-
-    func remove(_ item: PasswordItem) throws {
-        try Self.checkForRebuild()
-        let status = SecItemDelete(query(item) as CFDictionary)
-        if status != errSecItemNotFound {
-            try Self.check(status, operation: tr(.init("keychain.operation.remove", defaultValue: "移除密码记录")))
         }
     }
 

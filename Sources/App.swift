@@ -13,7 +13,7 @@ final class App: NSObject, NSApplicationDelegate {
     private var actionButtons: [NSButton] = []
     private var logLines: [String] = []
     private var busy = false
-    private let worker = DispatchQueue(label: "local.storeswitchpoc.ax")
+    private let worker = DispatchQueue(label: "com.gavzen.storeswitch.poc.ax")
     private let clock = ISO8601DateFormatter()
 
     static func main() {

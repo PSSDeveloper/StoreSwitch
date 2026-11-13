@@ -1,31 +1,26 @@
 import Foundation
 import ApplicationServices
+import Security
 
-private final class MemoryPasswordItems: PasswordItemStoring {
+private final class MemoryPasswordVault: PasswordVaultStoring {
     enum Failure: Error { case denied, writeFailed }
 
-    var values: [PasswordItem: Data] = [:]
-    var reads: [PasswordItem] = []
-    var deniedItem: PasswordItem?
+    var value: Data?
+    var reads = 0
+    var denyRead = false
     var failWrite = false
-    var failRemoval: PasswordItem?
     var writes = 0
 
-    func read(_ item: PasswordItem) throws -> Data? {
-        reads.append(item)
-        if item == deniedItem { throw Failure.denied }
-        return values[item]
+    func read() throws -> Data? {
+        reads += 1
+        if denyRead { throw Failure.denied }
+        return value
     }
 
-    func write(_ data: Data, to item: PasswordItem) throws {
+    func write(_ data: Data) throws {
         if failWrite { throw Failure.writeFailed }
         writes += 1
-        values[item] = data
-    }
-
-    func remove(_ item: PasswordItem) throws {
-        if item == failRemoval { throw Failure.denied }
-        values.removeValue(forKey: item)
+        value = data
     }
 }
 
@@ -362,70 +357,116 @@ enum CoordinatorChecks {
         do {
             let first = UUID()
             let second = UUID()
-            let items = MemoryPasswordItems()
-            let keychain = PasswordKeychain(items: items)
+            let storage = MemoryPasswordVault()
+            let keychain = PasswordKeychain(storage: storage)
             try! keychain.updateVault(setting: [first: "first-test-password", second: "second-test-password"], removing: [])
-            items.reads = []
+            storage.reads = 0
             let firstRead = try! keychain.read(first)
             let secondRead = try! keychain.read(second)
+            let saved = try! JSONDecoder().decode([String: String].self, from: storage.value!)
             check("switching between accounts reads one shared Keychain item",
-                  Set(items.values.keys) == [.vault] && items.writes == 1 && items.reads == [.vault, .vault]
-                      && firstRead.password == "first-test-password" && secondRead.password == "second-test-password")
+                  storage.writes == 1 && storage.reads == 2
+                      && saved == [first.uuidString: firstRead, second.uuidString: secondRead]
+                      && firstRead == "first-test-password" && secondRead == "second-test-password")
         }
 
         do {
             let id = UUID()
-            let items = MemoryPasswordItems()
-            let legacy = Data("legacy-test-password".utf8)
-            items.values[.legacy(id)] = legacy
-            let keychain = PasswordKeychain(items: items)
-            items.failWrite = true
-            let fallback = try! keychain.read(id)
-            check("failed migration keeps the old password usable and intact",
-                  fallback.migrationPending && items.values[.legacy(id)] == legacy && items.values[.vault] == nil)
-            items.failWrite = false
-            _ = try! keychain.read(id)
-            items.reads = []
-            let migrated = try! keychain.read(id)
-            check("legacy password is imported once, then read from the shared item",
-                  migrated.password == "legacy-test-password" && !migrated.migrationPending && items.reads == [.vault])
-            items.deniedItem = .vault
-            items.reads = []
-            let denied = try? keychain.read(id)
-            check("denying vault access does not trigger a second prompt for the old entry",
-                  denied == nil && items.reads == [.vault])
-            items.deniedItem = nil
+            let storage = MemoryPasswordVault()
+            let keychain = PasswordKeychain(storage: storage)
+            try! keychain.updateVault(setting: [id: "test-password"], removing: [])
+            storage.denyRead = true
+            storage.reads = 0
+            do {
+                _ = try keychain.read(id)
+                check("vault access denial is propagated after one read", false)
+            } catch {
+                check("vault access denial is propagated after one read",
+                      (error as? MemoryPasswordVault.Failure) == .denied && storage.reads == 1)
+            }
+            storage.denyRead = false
             try! keychain.updateVault(setting: [:], removing: [id])
-            let cleanup = keychain.removeLegacyCopies([id])
-            let removed = try? keychain.read(id)
-            check("removing a migrated password clears both copies and keeps the shared item",
-                  removed == nil && cleanup.isEmpty && items.values[.vault] != nil && items.values[.legacy(id)] == nil)
+            storage.reads = 0
+            do {
+                _ = try keychain.read(id)
+                check("removing the last password leaves an empty shared item", false)
+            } catch {
+                let saved = storage.value.flatMap { try? JSONDecoder().decode([String: String].self, from: $0) }
+                check("removing the last password leaves an empty shared item",
+                      (error as? KeychainFailure)?.status == errSecItemNotFound
+                          && storage.reads == 1 && storage.writes == 2 && saved?.isEmpty == true)
+            }
         }
 
         do {
             let first = UUID()
             let second = UUID()
-            let items = MemoryPasswordItems()
-            let keychain = PasswordKeychain(items: items)
+            let storage = MemoryPasswordVault()
+            let keychain = PasswordKeychain(storage: storage)
             try! keychain.updateVault(setting: [first: "old-test-password"], removing: [])
-            items.values[.legacy(first)] = Data("legacy-first".utf8)
-            let previous = items.values
-            items.failWrite = true
+            let previous = storage.value
+            storage.failWrite = true
             let result: Void? = try? keychain.updateVault(setting: [second: "new-test-password"], removing: [first])
-            check("failed vault commit leaves both the vault and legacy passwords unchanged",
-                  result == nil && items.values == previous)
-            items.failWrite = false
-            items.failRemoval = .legacy(first)
+            check("failed vault commit preserves the shared item",
+                  result == nil && storage.value == previous && storage.writes == 1)
+            storage.failWrite = false
             try! keychain.updateVault(setting: [second: "new-test-password"], removing: [first])
-            let cleanup = keychain.removeLegacyCopies([first, second])
             let updated = try! keychain.read(second)
-            check("legacy cleanup failures identify the affected password after the vault commits",
-                  Set(cleanup.keys) == [first] && updated.password == "new-test-password" && items.writes == 2)
-            items.failRemoval = nil
-            let retried = keychain.removeLegacyCopies(Set(cleanup.keys))
             let removed = try? keychain.read(first)
-            check("legacy cleanup can be retried without rewriting the vault",
-                  retried.isEmpty && removed == nil && items.writes == 2)
+            check("retry commits password additions and removals in one write",
+                  updated == "new-test-password" && removed == nil && storage.writes == 2)
+        }
+
+        do {
+            let form = AccountDrafts([])
+            let id = form.addAccount()
+            form.setEmail("  new@example.com  ", for: id)
+            let entry = form.entries[0]
+            let emailOnly = form.savePlan()
+            check("a new account can be saved without a password",
+                  form.canEditPassword(for: entry) && emailOnly.accounts.first?.email == "new@example.com"
+                      && emailOnly.accounts.first?.passwordID == nil && emailOnly.setting.isEmpty)
+
+            form.setPassword("new-test-password", for: entry)
+            let combined = form.savePlan()
+            let storage = MemoryPasswordVault()
+            let keychain = PasswordKeychain(storage: storage)
+            try! keychain.updateVault(setting: combined.setting, removing: combined.removing)
+            let savedPassword = combined.accounts.first?.passwordID.flatMap { try? keychain.read($0) }
+            check("a new account and password share one save plan",
+                  combined.accounts.first?.id == id && savedPassword == "new-test-password" && storage.writes == 1)
+
+            form.setEmail("other@example.com", for: id)
+            form.setPassword("stale-test-password", for: entry)
+            check("changing the email clears its password and rejects an edit from the prior address",
+                  form.passwordDraft(for: form.entries[0]).isEmpty && form.passwordDraftWasCleared(for: id)
+                      && form.savePlan().setting.isEmpty)
+            form.setEmail("new@example.com", for: id)
+            check("returning to the earlier email does not restore the cleared draft",
+                  form.savePlan().setting.isEmpty && form.savePlan().accounts.first?.passwordID == nil)
+        }
+
+        do {
+            let existing = StoreAccount(email: "first@example.com", passwordID: UUID())
+            let form = AccountDrafts([existing])
+            form.setPassword("replacement-test-password", for: existing)
+            form.setPassword("", for: existing)
+            check("clearing a replacement field preserves the saved password",
+                  form.savePlan().accounts.first?.passwordID == existing.passwordID && form.savePlan().setting.isEmpty)
+
+            let id = form.addAccount()
+            form.setEmail(" FIRST@example.com ", for: id)
+            check("a duplicate email cannot accept a password",
+                  !form.canEditPassword(for: form.entries[1]) && form.emailValidationMessage != nil)
+            form.delete(id)
+            form.setEmail("updated@example.com", for: existing.id)
+            form.setPassword("updated-test-password", for: form.entries[0])
+            let plan = form.savePlan()
+            let oldID = existing.passwordID!
+            let newID = plan.accounts.first?.passwordID
+            check("saving a changed email with a password replaces the old password reference",
+                  newID != oldID && newID.flatMap { plan.setting[$0] } == "updated-test-password"
+                      && plan.removing == [oldID])
         }
 
         exit(passed ? 0 : 1)

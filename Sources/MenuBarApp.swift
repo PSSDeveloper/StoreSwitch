@@ -12,7 +12,6 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let menu = NSMenu()
     private let preferences = UserDefaults.standard
-    private let passwords = PasswordKeychain()
     private let clock = ISO8601DateFormatter()
     private let shortcut = MenuShortcut()
     private var accounts: [StoreAccount] = []
@@ -494,12 +493,10 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
         }
         let form = AccountDrafts(accounts)
         accountDrafts = form
-        let editor = AccountEditor(form: form, save: { [weak self, weak form] in
-            if let form { self?.saveAccounts(form) }
+        let editor = AccountEditor(form: form, save: { [weak self, weak form] completion in
+            if let form { self?.saveAccounts(form, completion: completion) }
         }, close: { [weak self] in
             self?.accountWindow?.close()
-        }, editPassword: { [weak self, weak form] id in
-            if let form { self?.editPassword(id, form: form) }
         })
         let window = showWindow(tr(.init("window.manageAccounts", defaultValue: "管理 App Store 账号")), content: editor)
         accountWindow = window
@@ -553,6 +550,8 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
         Task {
             let succeeded: Bool
             do {
+                // Publish account references only after the Keychain write succeeds.
+                // A failure leaves the account and password drafts available for retry.
                 if !plan.affected.isEmpty {
                     try await Task.detached(priority: .userInitiated) {
                         try PasswordKeychain().updateVault(setting: plan.setting, removing: plan.removing)
@@ -560,13 +559,10 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
                 }
                 persistAccounts(plan.accounts)
                 form.didSave(plan.accounts)
-                // Account references now point to the committed vault, even if
-                // macOS doesn't allow us to remove an old copy.
-                if !plan.affected.isEmpty { await cleanLegacyPasswords(affected: plan.affected) }
                 succeeded = true
             } catch {
                 let failure = error as? KeychainFailure
-                logKeychainFailure(error)
+                append([failure?.logMessage ?? tr(.init("log.keychainFailed", defaultValue: "钥匙串 · 密码操作失败"))])
                 let reason = failure?.status == errSecCSStaticCodeChanged
                     ? tr(.init("accounts.save.reopen", defaultValue: "磁盘上的 StoreSwitch 已更新。请重新打开应用后重试。"))
                     : failure?.userMessage ?? tr(.init("common.tryAgain", defaultValue: "请稍后重试。"))
@@ -581,58 +577,10 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
         }
     }
 
-    private func cleanLegacyPasswords(affected: [UUID: StoreAccount]) async {
-        var pending = Set(affected.keys)
-        while !pending.isEmpty {
-            let ids = pending
-            let failures = await Task.detached(priority: .userInitiated) {
-                PasswordKeychain().removeLegacyCopies(ids)
-            }.value
-            guard !failures.isEmpty else { return }
-            for error in failures.values { logKeychainFailure(error) }
-            let labels = failures.keys.compactMap { affected[$0]?.label }.sorted().joined(separator: "\n")
-            NSApp.activate()
-            let alert = NSAlert()
-            alert.messageText = tr(.init("accounts.save.cleanupTitle", defaultValue: "部分旧密码未清理"))
-            alert.informativeText = tr(.init("accounts.save.cleanupDetails", defaultValue: "账号修改已保存。以下账号的旧密码副本未能从本机钥匙串移除，StoreSwitch 不会再使用这些副本：\n\(labels)"))
-            alert.addButton(withTitle: tr(.init("common.done", defaultValue: "完成")))
-            alert.addButton(withTitle: tr(.init("accounts.save.retryCleanup", defaultValue: "重试清理")))
-            guard alert.runModal() == .alertSecondButtonReturn else { return }
-            pending = Set(failures.keys)
-        }
-    }
-
-    private func logKeychainFailure(_ error: Error) {
-        append([(error as? KeychainFailure)?.logMessage ?? tr(.init("log.keychainFailed", defaultValue: "钥匙串 · 密码操作失败"))])
-    }
-
     private func persistAccounts(_ updates: [StoreAccount]) {
         guard let data = try? JSONEncoder().encode(updates) else { return }
         preferences.set(data, forKey: "accounts")
         accounts = updates
-    }
-
-    private func editPassword(_ accountID: UUID, form: AccountDrafts) {
-        guard NSApp.modalWindow == nil, coordinator.step.canSelect, !savingPassword,
-              let account = form.saved.first(where: { $0.id == accountID }) else { return }
-        let alert = NSAlert()
-        alert.messageText = tr(.init("keychain.setup", defaultValue: "设置自动登录密码"))
-        alert.informativeText = tr(.init("accounts.password.draftDetails", defaultValue: "账号：\(account.email)\n点击账号列表的「保存」后，密码才会存入本机钥匙串，并启用自动登录。"))
-        let field = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 280, height: 24))
-        field.placeholderString = tr(.init("keychain.password", defaultValue: "Apple Account 密码"))
-        field.setAccessibilityLabel(tr(.init("keychain.password", defaultValue: "Apple Account 密码")))
-        alert.accessoryView = field
-        alert.addButton(withTitle: tr(.init("common.confirm", defaultValue: "确定")))
-        alert.addButton(withTitle: tr(.init("common.cancel", defaultValue: "取消")))
-        alert.window.initialFirstResponder = field
-        defer { field.stringValue = "" }
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-        let password = field.stringValue
-        guard !password.isEmpty else {
-            showMessage(tr(.init("keychain.enterPassword", defaultValue: "请输入密码")), tr(.init("keychain.emptyPassword", defaultValue: "密码留空时不会保存。")))
-            return
-        }
-        form.setPassword(password, for: accountID)
     }
 
     @objc private func showLog() {
@@ -944,145 +892,17 @@ private struct ManualLoginRecoveryView: View {
     }
 }
 
-private final class AccountDrafts: ObservableObject {
-    private enum PasswordEdit {
-        case set(String), remove
-    }
-
-    struct SavePlan {
-        let accounts: [StoreAccount]
-        let setting: [UUID: String]
-        let removing: Set<UUID>
-        let affected: [UUID: StoreAccount]
-    }
-
-    @Published var entries: [StoreAccount]
-    @Published var isSavingPassword = false
-    @Published private var passwordEdits: [UUID: PasswordEdit] = [:]
-    private(set) var saved: [StoreAccount]
-    private let starterAccount: StoreAccount?
-
-    init(_ entries: [StoreAccount]) {
-        let starter = entries.isEmpty ? StoreAccount() : nil
-        starterAccount = starter
-        self.entries = starter.map { [$0] } ?? entries
-        saved = entries
-    }
-
-    var initialEmailFocus: UUID? { starterAccount?.id }
-
-    func addAccount() -> UUID {
-        if let starterAccount, entries.first?.id == starterAccount.id, normalized.isEmpty {
-            return starterAccount.id
-        }
-        let account = StoreAccount()
-        entries.append(account)
-        return account.id
-    }
-
-    func didSave(_ entries: [StoreAccount]) {
-        saved = entries
-        self.entries = entries
-        discardPasswordEdits()
-    }
-
-    func discardPasswordEdits() { passwordEdits.removeAll() }
-
-    private var normalized: [StoreAccount] {
-        let trimmed = entries.map { entry in
-            var normalized = entry
-            normalized.email = entry.email.trimmingCharacters(in: .whitespacesAndNewlines)
-            return normalized
-        }
-        // An untouched first row is ready for typing without counting as an edit.
-        if let starterAccount, trimmed == [starterAccount] { return [] }
-        return trimmed
-    }
-
-    var hasChanges: Bool { normalized != saved || !passwordEdits.isEmpty }
-
-    var emailValidationMessage: LocalizedStringResource? {
-        let emails = normalized.map(\.email)
-        let validEmails = emails.filter(StoreAccount.validEmail)
-        if Set(validEmails.map { $0.lowercased() }).count != validEmails.count {
-            return .init("accounts.duplicateEmail", defaultValue: "该 Apple Account 邮箱已存在。")
-        }
-        if validEmails.count != emails.count {
-            return .init("accounts.invalidEmail", defaultValue: "请输入有效的账号邮箱。")
-        }
-        return nil
-    }
-
-    private func matchingSavedAccount(for entry: StoreAccount) -> StoreAccount? {
-        let email = entry.email.trimmingCharacters(in: .whitespacesAndNewlines)
-        return saved.first { $0.id == entry.id && $0.email == email }
-    }
-
-    func canEditPassword(for entry: StoreAccount) -> Bool { matchingSavedAccount(for: entry) != nil }
-
-    func passwordEnabled(for entry: StoreAccount) -> Bool {
-        guard let original = matchingSavedAccount(for: entry) else { return false }
-        switch passwordEdits[entry.id] {
-        case .set: return true
-        case .remove: return false
-        case nil: return original.passwordID != nil
-        }
-    }
-
-    func setPassword(_ password: String, for id: UUID) {
-        passwordEdits[id] = .set(password)
-    }
-
-    func removePassword(for id: UUID) {
-        passwordEdits[id] = saved.first(where: { $0.id == id })?.passwordID == nil ? nil : .remove
-    }
-
-    func delete(_ id: UUID) {
-        passwordEdits[id] = nil
-        entries.removeAll { $0.id == id }
-    }
-
-    func savePlan() -> SavePlan {
-        var setting: [UUID: String] = [:]
-        var affected: [UUID: StoreAccount] = [:]
-        let updates = normalized.map { entry in
-            var update = entry
-            let original = matchingSavedAccount(for: entry)
-            // An address change must never carry over a password for the old address.
-            update.passwordID = original?.passwordID
-            if let original {
-                switch passwordEdits[entry.id] {
-                case .set(let password):
-                    let id = original.passwordID ?? UUID()
-                    update.passwordID = id
-                    setting[id] = password
-                    affected[id] = update
-                case .remove:
-                    update.passwordID = nil
-                case nil:
-                    break
-                }
-            }
-            return update
-        }
-        let retained = Set(updates.compactMap(\.passwordID))
-        var removing = Set<UUID>()
-        for original in saved {
-            guard let id = original.passwordID, !retained.contains(id) else { continue }
-            removing.insert(id)
-            affected[id] = original
-        }
-        return SavePlan(accounts: updates, setting: setting, removing: removing, affected: affected)
-    }
-}
-
 private struct AccountEditor: View {
+    private enum Field: Hashable {
+        case email(UUID), password(UUID)
+    }
+
     @AppStorage(AppLanguage.preferenceKey) private var language: AppLanguage = .preferred
-    @FocusState private var focusedEmail: UUID?
+    @FocusState private var focusedField: Field?
+    @State private var expandedPasswords = Set<UUID>()
     @ObservedObject var form: AccountDrafts
-    let save: () -> Void
+    let save: (@escaping (Bool) -> Void) -> Void
     let close: () -> Void
-    let editPassword: (UUID) -> Void
 
     var body: some View {
         let emailIssue = form.emailValidationMessage
@@ -1091,7 +911,7 @@ private struct AccountEditor: View {
                 Text(language.text(.init("accounts.list", defaultValue: "账号列表"))).font(.title2.bold())
                 Spacer()
                 Button {
-                    focusedEmail = form.addAccount()
+                    focusedField = .email(form.addAccount())
                 } label: {
                     Label(language.text(.init("accounts.add", defaultValue: "添加账号")), systemImage: "plus")
                 }
@@ -1102,8 +922,8 @@ private struct AccountEditor: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollViewReader { proxy in
-                    accountRows.onChange(of: focusedEmail) { _, id in
-                        if let id { proxy.scrollTo(id) }
+                    accountRows.onChange(of: focusedField) { _, field in
+                        if let field { proxy.scrollTo(field) }
                     }
                 }
             }
@@ -1116,16 +936,20 @@ private struct AccountEditor: View {
                 } else if form.hasChanges {
                     Text(language.text(.init("accounts.save.hint", defaultValue: "账号和密码修改在保存后生效。"))).foregroundStyle(.secondary)
                 } else {
-                    Text(language.text(.init("accounts.autoSignInHint", defaultValue: "保存邮箱后可设置自动登录。"))).foregroundStyle(.secondary)
+                    Text(language.text(.init("accounts.autoSignInHint", defaultValue: "可设置密码以启用自动登录。"))).foregroundStyle(.secondary)
                 }
                 Spacer()
                 if !form.hasChanges {
                     Button(language.text(.init("common.done", defaultValue: "完成")), action: close).keyboardShortcut(.defaultAction)
                 } else {
                     Button(language.text(.init("common.cancel", defaultValue: "取消")), role: .cancel, action: close).keyboardShortcut(.cancelAction)
-                    Button(language.text(.init("common.save", defaultValue: "保存")), action: save)
-                        .keyboardShortcut(.defaultAction)
-                        .disabled(emailIssue != nil)
+                    Button(language.text(.init("common.save", defaultValue: "保存"))) {
+                        save { succeeded in
+                            if succeeded { expandedPasswords.removeAll() }
+                        }
+                    }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(emailIssue != nil)
                 }
             }
         }
@@ -1133,7 +957,7 @@ private struct AccountEditor: View {
         .frame(width: 750, height: 430)
         .disabled(form.isSavingPassword)
         .task {
-            if focusedEmail == nil { focusedEmail = form.initialEmailFocus }
+            if focusedField == nil, let id = form.initialEmailFocus { focusedField = .email(id) }
         }
     }
 
@@ -1158,27 +982,32 @@ private struct AccountEditor: View {
                         .labelsHidden()
                         .accessibilityLabel(language.text(.init("accounts.accountRegion", defaultValue: "账号地区")))
                         .frame(width: 148)
-                        TextField(language.text(.init("accounts.email", defaultValue: "Apple Account 邮箱")), text: $entry.email,
+                        TextField(language.text(.init("accounts.email", defaultValue: "Apple Account 邮箱")),
+                                  text: Binding(get: { entry.email }, set: { form.setEmail($0, for: entry.id) }),
                                   prompt: Text(verbatim: "name@example.com"))
-                            .focused($focusedEmail, equals: entry.id)
-                            .id(entry.id)
+                            .focused($focusedField, equals: .email(entry.id))
+                            .id(Field.email(entry.id))
                             .labelsHidden()
                             .accessibilityLabel(language.text(.init("accounts.email", defaultValue: "Apple Account 邮箱")))
                             .frame(minWidth: 240, maxWidth: .infinity)
                         HStack(spacing: 6) {
-                            Button(form.passwordEnabled(for: entry) ? language.text(.init("accounts.changePassword", defaultValue: "更改密码…")) : language.text(.init("accounts.setPassword", defaultValue: "设置密码…"))) {
-                                editPassword(entry.id)
+                            if !expandedPasswords.contains(entry.id) {
+                                Button(form.passwordEnabled(for: entry) ? language.text(.init("accounts.changePassword", defaultValue: "更改密码")) : language.text(.init("accounts.setPassword", defaultValue: "设置密码"))) {
+                                    expandedPasswords.insert(entry.id)
+                                }
+                                .disabled(!form.canEditPassword(for: entry))
                             }
-                            .disabled(!form.canEditPassword(for: entry))
                             if form.passwordEnabled(for: entry) {
                                 Button(language.text(.init("accounts.removePassword", defaultValue: "移除密码"))) {
                                     form.removePassword(for: entry.id)
+                                    expandedPasswords.remove(entry.id)
                                 }
                                 .help(language.text(.init("accounts.password.removeHint", defaultValue: "点击「保存」后关闭自动登录并移除密码。")))
                             }
                         }
                         .fixedSize(horizontal: true, vertical: false)
                         Button {
+                            expandedPasswords.remove(entry.id)
                             form.delete(entry.id)
                         } label: {
                             Image(systemName: "trash").frame(width: 22)
@@ -1186,12 +1015,41 @@ private struct AccountEditor: View {
                         .accessibilityLabel(language.text(.init("accounts.delete", defaultValue: "删除账号")))
                         .help(language.text(.init("accounts.deleteHint", defaultValue: "保存时删除账号")))
                     }
+                    if expandedPasswords.contains(entry.id) {
+                        GridRow {
+                            Color.clear.gridCellUnsizedAxes([.horizontal, .vertical])
+                            passwordField(for: entry)
+                                .gridCellColumns(3)
+                        }
+                    }
                 }
             }
             .textFieldStyle(.roundedBorder)
             .padding(.vertical, 4)
         }
         .frame(maxHeight: .infinity)
+    }
+
+    private func passwordField(for entry: StoreAccount) -> some View {
+        let title = language.text(.init("keychain.password", defaultValue: "Apple Account 密码"))
+        return VStack(alignment: .leading, spacing: 4) {
+            SecureField(title, text: Binding(
+                get: { form.passwordDraft(for: entry) },
+                set: { form.setPassword($0, for: entry) }
+            ), prompt: Text(language.text(.init("accounts.password.optional", defaultValue: "Apple Account 密码（可选）"))))
+                .labelsHidden()
+                .focused($focusedField, equals: .password(entry.id))
+                .id(Field.password(entry.id))
+                .disabled(!form.canEditPassword(for: entry))
+                .task {
+                    if form.canEditPassword(for: entry) { focusedField = .password(entry.id) }
+                }
+            if form.passwordDraftWasCleared(for: entry.id) {
+                Text(language.text(.init("accounts.password.reenter", defaultValue: "邮箱已更改，之前输入的密码已清除。如需自动登录，请重新输入。")))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 }
 

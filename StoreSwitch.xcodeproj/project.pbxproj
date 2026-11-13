@@ -17,6 +17,7 @@
 		A7106F400001000000000009 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000009 /* AppLanguage.swift */; };
 		A7106F40000100000000000A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A7106F40000200000000000A /* Localizable.xcstrings */; };
 		A7106F40000100000000000B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A7106F40000A000000000001 /* Sparkle */; };
+		A7106F40000100000000000C /* AccountDrafts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F40000200000000000B /* AccountDrafts.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		A7106F400002000000000008 /* PermissionGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionGuide.swift; sourceTree = "<group>"; };
 		A7106F400002000000000009 /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		A7106F40000200000000000A /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		A7106F40000200000000000B /* AccountDrafts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDrafts.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				A7106F400002000000000001 /* MenuBarApp.swift */,
+				A7106F40000200000000000B /* AccountDrafts.swift */,
 				A7106F400002000000000008 /* PermissionGuide.swift */,
 				A7106F400002000000000009 /* AppLanguage.swift */,
 				A7106F400002000000000002 /* StoreAX.swift */,
@@ -155,6 +158,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A7106F400001000000000001 /* MenuBarApp.swift in Sources */,
+				A7106F40000100000000000C /* AccountDrafts.swift in Sources */,
 				A7106F400001000000000008 /* PermissionGuide.swift in Sources */,
 				A7106F400001000000000009 /* AppLanguage.swift in Sources */,
 				A7106F400001000000000002 /* StoreAX.swift in Sources */,
@@ -174,8 +178,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -200,6 +204,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 12;
 				ENABLE_APP_SANDBOX = NO;
@@ -207,9 +212,12 @@
 				INFOPLIST_FILE = "Resources/StoreSwitch-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = StoreSwitch;
 				INFOPLIST_KEY_LSUIElement = YES;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MARKETING_VERSION = 0.5.6;
-				PRODUCT_BUNDLE_IDENTIFIER = local.storeswitch;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gavzen.storeswitch;
 				PRODUCT_NAME = StoreSwitch;
 				STORESWITCH_UPDATE_FEED_URL = "";
 				STORESWITCH_UPDATE_PUBLIC_KEY = "";
@@ -221,6 +229,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 12;
 				ENABLE_APP_SANDBOX = NO;
@@ -228,9 +237,12 @@
 				INFOPLIST_FILE = "Resources/StoreSwitch-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = StoreSwitch;
 				INFOPLIST_KEY_LSUIElement = YES;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MARKETING_VERSION = 0.5.6;
-				PRODUCT_BUNDLE_IDENTIFIER = local.storeswitch;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gavzen.storeswitch;
 				PRODUCT_NAME = StoreSwitch;
 				STORESWITCH_UPDATE_FEED_URL = "";
 				STORESWITCH_UPDATE_PUBLIC_KEY = "";

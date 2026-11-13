@@ -3,7 +3,7 @@ import ApplicationServices
 
 @MainActor
 final class AppStoreAutomation: StoreAutomating {
-    private let worker = DispatchQueue(label: "local.storeswitch.ax")
+    private let worker = DispatchQueue(label: "com.gavzen.storeswitch.ax")
     private let log: ([String]) -> Void
 
     init(log: @escaping ([String]) -> Void) {
@@ -45,15 +45,11 @@ final class AppStoreAutomation: StoreAutomating {
     func readSavedPassword(id: UUID) async throws -> String {
         // SecItemCopyMatching can wait for the system authorization dialog.
         do {
-            let result: PasswordKeychain.ReadResult = try await withCheckedThrowingContinuation { continuation in
+            return try await withCheckedThrowingContinuation { continuation in
                 worker.async {
                     continuation.resume(with: Result { try PasswordKeychain().read(id) })
                 }
             }
-            if result.migrationPending {
-                log([tr(.init("log.keychainMigrationPending", defaultValue: "钥匙串 · 旧密码可用，合并保存暂未完成"))])
-            }
-            return result.password
         } catch let failure as KeychainFailure {
             log([failure.logMessage])
             throw failure

@@ -9,7 +9,7 @@
     <key>CFBundleExecutable</key>
     <string>StoreSwitchPOC</string>
     <key>CFBundleIdentifier</key>
-    <string>local.storeswitchpoc</string>
+    <string>com.gavzen.storeswitch.poc</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>

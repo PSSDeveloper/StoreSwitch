@@ -102,13 +102,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save the email address to set up auto sign-in."
+            "value" : "Set a password to enable auto sign-in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存邮箱后可设置自动登录。"
+            "value" : "可设置密码以启用自动登录。"
           }
         }
       }
@@ -118,13 +118,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change Password…"
+            "value" : "Change Password"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更改密码…"
+            "value" : "更改密码"
           }
         }
       }
@@ -257,18 +257,34 @@
         }
       }
     },
-    "accounts.password.draftDetails" : {
+    "accounts.password.optional" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Account: %@\nClick Save in the account list to store the password in the local Keychain and enable auto sign-in."
+            "value" : "Apple Account password (optional)"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "账号：%@\n点击账号列表的「保存」后，密码才会存入本机钥匙串，并启用自动登录。"
+            "value" : "Apple Account 密码（可选）"
+          }
+        }
+      }
+    },
+    "accounts.password.reenter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The email address changed and the password you entered was cleared. Enter it again to use auto sign-in."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "邮箱已更改，之前输入的密码已清除。如需自动登录，请重新输入。"
           }
         }
       }
@@ -317,38 +333,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "移除密码"
-          }
-        }
-      }
-    },
-    "accounts.save.cleanupDetails" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your account changes were saved. Old password copies for these accounts could not be removed from the local Keychain. StoreSwitch no longer uses these copies:\n%@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "账号修改已保存。以下账号的旧密码副本未能从本机钥匙串移除，StoreSwitch 不会再使用这些副本：\n%@"
-          }
-        }
-      }
-    },
-    "accounts.save.cleanupTitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Some old passwords remain"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "部分旧密码未清理"
           }
         }
       }
@@ -433,34 +417,18 @@
         }
       }
     },
-    "accounts.save.retryCleanup" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retry Cleanup"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重试清理"
-          }
-        }
-      }
-    },
     "accounts.setPassword" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set Password…"
+            "value" : "Set Password"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "设置密码…"
+            "value" : "设置密码"
           }
         }
       }
@@ -578,6 +546,7 @@
       }
     },
     "common.confirm" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -977,38 +946,6 @@
         }
       }
     },
-    "keychain.emptyPassword" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a password to save it."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "密码留空时不会保存。"
-          }
-        }
-      }
-    },
-    "keychain.enterPassword" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a Password"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请输入密码"
-          }
-        }
-      }
-    },
     "keychain.operation.add" : {
       "localizations" : {
         "en" : {
@@ -1041,22 +978,6 @@
         }
       }
     },
-    "keychain.operation.decodeLegacy" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decode legacy password"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "解码旧密码"
-          }
-        }
-      }
-    },
     "keychain.operation.decodeVault" : {
       "localizations" : {
         "en" : {
@@ -1073,18 +994,18 @@
         }
       }
     },
-    "keychain.operation.findLegacy" : {
+    "keychain.operation.findPassword" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Find legacy password"
+            "value" : "Find account password"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查找旧密码"
+            "value" : "查找账号密码"
           }
         }
       }
@@ -1117,22 +1038,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "读取密码记录"
-          }
-        }
-      }
-    },
-    "keychain.operation.remove" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove password record"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "移除密码记录"
           }
         }
       }
@@ -1181,22 +1086,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple Account 密码"
-          }
-        }
-      }
-    },
-    "keychain.setup" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set Auto Sign-In Password"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "设置自动登录密码"
           }
         }
       }
@@ -1985,6 +1874,22 @@
         }
       }
     },
+    "log.axWindowsAmbiguous" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Window scope is ambiguous or unreadable · App Store AXWindows=%lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "窗口范围不唯一或不可读 · App Store AXWindows=%lld"
+          }
+        }
+      }
+    },
     "log.axWindowScanLimit" : {
       "localizations" : {
         "en" : {
@@ -2029,22 +1934,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "窗口 AX 树（最多 45 个普通节点，另列已匹配节点）"
-          }
-        }
-      }
-    },
-    "log.axWindowsAmbiguous" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Window scope is ambiguous or unreadable · App Store AXWindows=%lld"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "窗口范围不唯一或不可读 · App Store AXWindows=%lld"
           }
         }
       }
@@ -2141,22 +2030,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "钥匙串 · 密码操作失败"
-          }
-        }
-      }
-    },
-    "log.keychainMigrationPending" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keychain · Legacy password is available. Migration is pending."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "钥匙串 · 旧密码可用，合并保存暂未完成"
           }
         }
       }
@@ -3239,13 +3112,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "If the list shows an older version, remove it and add the current app. Restart StoreSwitch if needed, then check again."
+            "value" : "Remove the existing entry, use + to add the StoreSwitch.app selected by Show in Finder, and turn on its switch."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "若列表中是旧版本，请移除旧条目并添加当前 App。必要时重启 StoreSwitch，再检查授权。"
+            "value" : "移除已有条目，再用「＋」添加「在访达中显示」所选中的 StoreSwitch.app，并开启开关。"
           }
         }
       }

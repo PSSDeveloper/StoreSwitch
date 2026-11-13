@@ -88,6 +88,18 @@ struct PermissionGuideView: View {
                 guide.refresh(trusted: AXIsProcessTrusted())
             }
         }
+        .task(id: guide.page == .waiting) {
+            guard guide.page == .waiting else { return }
+            do { try await Task.sleep(for: .seconds(15)) }
+            catch { return }
+            guard !Task.isCancelled, guide.page == .waiting else { return }
+            checkWaitingPermission()
+        }
+    }
+
+    private func checkWaitingPermission() {
+        guide.refresh(trusted: AXIsProcessTrusted())
+        if guide.page == .waiting { guide.showTroubleshooting() }
     }
 
     private var introduction: some View {
@@ -134,6 +146,7 @@ struct PermissionGuideView: View {
                 }
                 .buttonStyle(.borderless)
                 Spacer()
+                Button(language.text(.init("menu.checkAgain", defaultValue: "重新检查")), action: checkWaitingPermission)
                 Button(language.text(.init("permission.reopenSettings", defaultValue: "再次打开系统设置")), action: openSettings)
             }
         }
@@ -191,7 +204,7 @@ struct PermissionGuideView: View {
             recoveryRow(language.text(.init("permission.notListed", defaultValue: "列表中找不到 StoreSwitch")), icon: "plus",
                         detail: language.text(.init("permission.addCurrentApp", defaultValue: "点系统设置里的「＋」，添加当前的 StoreSwitch.app。")))
             recoveryRow(language.text(.init("permission.switchOnNoAccess", defaultValue: "开关已开启，但仍未生效")), icon: "arrow.clockwise",
-                        detail: language.text(.init("permission.replaceOldApp", defaultValue: "若列表中是旧版本，请移除旧条目并添加当前 App。必要时重启 StoreSwitch，再检查授权。")))
+                        detail: language.text(.init("permission.replaceOldApp", defaultValue: "移除已有条目，再用「＋」添加「在访达中显示」所选中的 StoreSwitch.app，并开启开关。")))
             Spacer(minLength: 0)
             HStack {
                 Button(language.text(.init("permission.reopenSettings", defaultValue: "再次打开系统设置")), action: openSettings)
