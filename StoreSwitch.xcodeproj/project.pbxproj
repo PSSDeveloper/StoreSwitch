@@ -16,6 +16,7 @@
 		A7106F400001000000000008 /* PermissionGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000008 /* PermissionGuide.swift */; };
 		A7106F400001000000000009 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7106F400002000000000009 /* AppLanguage.swift */; };
 		A7106F40000100000000000A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A7106F40000200000000000A /* Localizable.xcstrings */; };
+		A7106F40000100000000000B /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A7106F40000A000000000001 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,17 @@
 		A7106F400002000000000009 /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		A7106F40000200000000000A /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A7106F400006000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A7106F40000100000000000B /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		A7106F400003000000000001 = {
@@ -80,6 +92,7 @@
 			buildConfigurationList = A7106F400008000000000002 /* Build configuration list for PBXNativeTarget "StoreSwitchDev" */;
 			buildPhases = (
 				A7106F400006000000000001 /* Sources */,
+				A7106F400006000000000003 /* Frameworks */,
 				A7106F400006000000000002 /* Resources */,
 			);
 			buildRules = (
@@ -87,6 +100,9 @@
 			dependencies = (
 			);
 			name = StoreSwitchDev;
+			packageProductDependencies = (
+				A7106F40000A000000000001 /* Sparkle */,
+			);
 			productName = StoreSwitchDev;
 			productReference = A7106F400002000000000003 /* StoreSwitch.app */;
 			productType = "com.apple.product-type.application";
@@ -109,6 +125,9 @@
 				Base,
 			);
 			mainGroup = A7106F400003000000000001;
+			packageReferences = (
+				A7106F400009000000000001 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			productRefGroup = A7106F400003000000000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -185,11 +204,15 @@
 				CURRENT_PROJECT_VERSION = 12;
 				ENABLE_APP_SANDBOX = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Resources/StoreSwitch-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = StoreSwitch;
 				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MARKETING_VERSION = 0.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = local.storeswitch;
 				PRODUCT_NAME = StoreSwitch;
+				STORESWITCH_UPDATE_FEED_URL = "";
+				STORESWITCH_UPDATE_PUBLIC_KEY = "";
 			};
 			name = Debug;
 		};
@@ -202,11 +225,15 @@
 				CURRENT_PROJECT_VERSION = 12;
 				ENABLE_APP_SANDBOX = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Resources/StoreSwitch-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = StoreSwitch;
 				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MARKETING_VERSION = 0.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = local.storeswitch;
 				PRODUCT_NAME = StoreSwitch;
+				STORESWITCH_UPDATE_FEED_URL = "";
+				STORESWITCH_UPDATE_PUBLIC_KEY = "";
 			};
 			name = Release;
 		};
@@ -232,6 +259,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A7106F400009000000000001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.10.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A7106F40000A000000000001 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A7106F400009000000000001 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A7106F400005000000000001 /* Project object */;
 }

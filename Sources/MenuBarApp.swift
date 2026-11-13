@@ -2,12 +2,13 @@ import AppKit
 import ApplicationServices
 import CoreServices
 import Security
+import Sparkle
 import SwiftUI
 import Carbon.HIToolbox
 
 @main
 @MainActor
-final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindowDelegate {
+final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemValidation, NSWindowDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let menu = NSMenu()
     private let preferences = UserDefaults.standard
@@ -27,6 +28,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
     private var manualLoginWindow: NSWindow?
     private var logWindow: NSWindow?
     private var aboutWindow: NSWindow?
+    private var updaterController: SPUStandardUpdaterController?
     private var menuIsOpen = false
     private lazy var automation = AppStoreAutomation { [weak self] in self?.append($0) }
     private lazy var coordinator = AccountSwitchCoordinator(
@@ -169,7 +171,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
             let title = titles[index]
             // Show the full address if two shortened labels would look identical.
             let item = add(counts[title] == 1 ? title : accountTitle(account, address: account.label),
-                           #selector(selectAccount(_:)), key: key, enabled: step.canSelect && !savingPassword)
+                           #selector(selectAccount(_:)), key: key, enabled: canStartSwitch)
             item.representedObject = account.id.uuidString
             let region = account.region.title(in: .current)
             let accessibleAddress = tr(.init("menu.accountAddress", defaultValue: "\(region)，\(account.email)"))
@@ -219,6 +221,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
 #endif
         menu.addItem(languageMenuItem())
         menu.addItem(.separator())
+        add(tr(.init("menu.checkUpdates", defaultValue: "检查更新…")), #selector(checkForUpdates), enabled: canCheckForUpdates)
         add(tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), #selector(showAbout), enabled: !step.isWorking)
         add(tr(.init("menu.quit", defaultValue: "退出 StoreSwitch")), #selector(quit), key: "q", enabled: !step.isWorking && !savingPassword)
     }
@@ -290,7 +293,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
     }
 
     private func startSwitch(to account: StoreAccount) {
-        guard NSApp.modalWindow == nil, coordinator.step.canSelect, !savingPassword else { return }
+        guard NSApp.modalWindow == nil, canStartSwitch else { return }
         guard AXIsProcessTrusted() else {
             presentPermissionGuide(for: .switchAccount(account))
             return
@@ -303,6 +306,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
             }
             self.permissionWindow?.close()
             Task {
+                guard self.canStartSwitch else { return }
                 await self.coordinator.start(current) { [weak self] in self?.confirmExit($0) == true }
             }
         }
@@ -464,6 +468,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
         guide.refresh(trusted: AXIsProcessTrusted())
         guard guide.page == .granted else { return }
         let request = guide.request
+        if case .switchAccount = request, !canStartSwitch { return }
         permissionWindow?.close()
         switch request {
         case .standalone:
@@ -721,6 +726,58 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
         })
     }
 
+    // Updating can quit and relaunch StoreSwitch. Keep a switch from starting
+    // while Sparkle is presenting or installing an update.
+    private var canStartSwitch: Bool {
+        coordinator.step.canSelect && !savingPassword && updaterController?.updater.sessionInProgress != true
+    }
+
+    private var canCheckForUpdates: Bool {
+        NSApp.modalWindow == nil && coordinator.step.canSelect && !savingPassword
+            && updaterController?.updater.canCheckForUpdates != false
+    }
+
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        menuItem.action != #selector(checkForUpdates) || canCheckForUpdates
+    }
+
+    @objc private func checkForUpdates() {
+        guard canCheckForUpdates else { return }
+        if let updaterController {
+            updaterController.checkForUpdates(nil)
+            return
+        }
+
+        // Local builds can omit the release feed and public key. Start Sparkle
+        // only on demand so those builds still launch normally and never poll.
+        let bundle = Bundle.main
+        guard let feed = bundle.object(forInfoDictionaryKey: "SUFeedURL") as? String,
+              let url = URLComponents(string: feed), url.scheme?.lowercased() == "https",
+              url.host?.isEmpty == false, url.user == nil, url.password == nil,
+              let key = bundle.object(forInfoDictionaryKey: "SUPublicEDKey") as? String,
+              Data(base64Encoded: key)?.count == 32 else {
+            showMessage(tr(.init("update.title", defaultValue: "软件更新")),
+                        tr(.init("update.unconfigured", defaultValue: "当前构建尚未配置更新地址或签名公钥。")))
+            return
+        }
+
+        // Retain one controller so repeated menu clicks reopen Sparkle's
+        // existing update UI. Sparkle handles checking, verification and install.
+        let controller = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
+        do {
+            try controller.updater.start()
+        } catch {
+            let failure = error as NSError
+            append([tr(.init("log.updaterStartFailed", defaultValue: "Sparkle 启动失败 · \(failure.domain) (\(failure.code))"))])
+            showMessage(tr(.init("update.title", defaultValue: "软件更新")),
+                        tr(.init("update.failed", defaultValue: "暂时无法检查更新，请稍后重试。")))
+            return
+        }
+        updaterController = controller
+        NSApp.activate()
+        controller.checkForUpdates(nil)
+    }
+
     @objc private func quit() {
         guard !coordinator.step.isWorking, !savingPassword else { return }
         NSApp.terminate(nil)
@@ -731,6 +788,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindo
         let appItem = NSMenuItem()
         let app = NSMenu()
         app.addItem(withTitle: tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), action: #selector(showAbout), keyEquivalent: "").target = self
+        app.addItem(withTitle: tr(.init("menu.checkUpdates", defaultValue: "检查更新…")), action: #selector(checkForUpdates), keyEquivalent: "").target = self
         app.addItem(.separator())
         app.addItem(withTitle: tr(.init("menu.manageAccounts", defaultValue: "管理账号…")), action: #selector(showAccounts), keyEquivalent: ",").target = self
         app.addItem(withTitle: tr(.init("menu.checkSignIn", defaultValue: "检查登录状态")), action: #selector(checkLogin), keyEquivalent: "r").target = self

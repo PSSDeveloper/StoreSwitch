@@ -2353,6 +2353,22 @@
         }
       }
     },
+    "log.updaterStartFailed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sparkle startup failed · %1$@ (%2$lld)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sparkle 启动失败 · %1$@ (%2$lld)"
+          }
+        }
+      }
+    },
     "login.checkingStore" : {
       "localizations" : {
         "en" : {
@@ -2589,6 +2605,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "检查登录状态"
+          }
+        }
+      }
+    },
+    "menu.checkUpdates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查更新…"
           }
         }
       }
@@ -3886,6 +3918,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请在菜单中重新选择要切换的账号。"
+          }
+        }
+      }
+    },
+    "update.failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't check for updates. Try again later."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂时无法检查更新，请稍后重试。"
+          }
+        }
+      }
+    },
+    "update.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Software Update"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "软件更新"
+          }
+        }
+      }
+    },
+    "update.unconfigured" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This build needs an update address and a signing public key."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前构建尚未配置更新地址或签名公钥。"
           }
         }
       }

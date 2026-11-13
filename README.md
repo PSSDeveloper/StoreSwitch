@@ -23,6 +23,17 @@ StoreSwitch 是面向个人自用的 macOS 菜单栏应用。它可保存多个 
 
 **快捷键：**全局 `⌃⌥S` 打开 StoreSwitch 菜单，可从菜单关闭；也可点击菜单栏图标。菜单中的 `⌘1` 至 `⌘9` 对应账号列表的前九项。
 
+## 发布与检查更新
+
+从菜单点「检查更新…」会打开 Sparkle 2 的更新界面。发现新版后，由用户确认安装，Sparkle 负责下载、验签和重启。更新界面使用 macOS 为应用选择的语言。首次迁移到 Sparkle 的用户需通过 DMG 安装一次带 Sparkle 的版本。
+
+1. 用 Sparkle 自带的 `generate_keys` 生成 EdDSA 密钥。保存和备份签名私钥，仅将输出的公钥用于构建。
+2. 在 StoreSwitchDev 目标的构建设置中填写 `STORESWITCH_UPDATE_FEED_URL` 和 `STORESWITCH_UPDATE_PUBLIC_KEY`。也可以把 `'STORESWITCH_UPDATE_FEED_URL=https://downloads.example.com/storeswitch/appcast.xml'` 和 `'STORESWITCH_UPDATE_PUBLIC_KEY=你的公钥'` 传给 `xcodebuild`。开发构建可以留空，点「检查更新…」时会说明缺少配置。
+3. 发布时递增构建号 `CURRENT_PROJECT_VERSION`。为 App 做 Developer ID 签名和 Apple 公证，完成 DMG 打包后，用 Sparkle 的 `generate_appcast --download-url-prefix https://downloads.example.com/storeswitch/ <DMG目录>` 生成 `appcast.xml` 和更新包签名。
+4. 把新 DMG 和清单上传到可匿名访问的 HTTPS 下载目录，先上传 DMG，再替换清单。用已安装的旧构建点「检查更新…」，验证从检查到安装和重启的流程。
+
+相关工具和签名要求见 [Sparkle 官方文档](https://sparkle-project.org/documentation/)。
+
 ## 恢复和日志
 
 - 如果 App Store 刚启动，应用会短暂重读「商店」菜单；若仍读不到，可点「重新检查」。如果退出操作已发出但结果未确认，先处理 App Store 的原生退出提示，再点「继续登录」。需要完整说明时可点「查看切换详情」。

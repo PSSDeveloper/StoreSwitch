@@ -2,7 +2,12 @@
 .DS_Store
 xcuserdata/
 *.xcuserstate
-/StoreSwitch.xcodeproj/project.xcworkspace/
+/StoreSwitch.xcodeproj/project.xcworkspace/*
+!/StoreSwitch.xcodeproj/project.xcworkspace/xcshareddata/
+/StoreSwitch.xcodeproj/project.xcworkspace/xcshareddata/*
+!/StoreSwitch.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+/StoreSwitch.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/*
+!/StoreSwitch.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 # Local builds and test logs
 /.build/

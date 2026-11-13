@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Both values come from the release build. Only the public key goes into the app. -->
+    <key>SUFeedURL</key>
+    <string>$(STORESWITCH_UPDATE_FEED_URL)</string>
+    <key>SUPublicEDKey</key>
+    <string>$(STORESWITCH_UPDATE_PUBLIC_KEY)</string>
+    <!-- Keep update checks and installation user initiated. -->
+    <key>SUEnableAutomaticChecks</key>
+    <false/>
+    <key>SUAllowsAutomaticUpdates</key>
+    <false/>
+    <!-- Reject an unsigned or modified update before opening the downloaded archive. -->
+    <key>SUVerifyUpdateBeforeExtraction</key>
+    <true/>
+</dict>
+</plist>
