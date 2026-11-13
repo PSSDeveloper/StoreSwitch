@@ -222,6 +222,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
         menu.addItem(.separator())
         add(tr(.init("menu.checkUpdates", defaultValue: "检查更新…")), #selector(checkForUpdates), enabled: canCheckForUpdates)
         add(tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), #selector(showAbout), enabled: !step.isWorking)
+        menu.addItem(.separator())
         add(tr(.init("menu.quit", defaultValue: "退出 StoreSwitch")), #selector(quit), key: "q", enabled: !step.isWorking && !savingPassword)
     }
 
