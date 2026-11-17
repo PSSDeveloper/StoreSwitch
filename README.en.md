@@ -1,9 +1,10 @@
-<img src="Resources/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" alt="StoreSwitch app icon" width="128" height="128">
-
-# StoreSwitch · Switch App Store Accounts
-
-[简体中文](README.md) · **English**
-
+<div align="center">
+	<img src="Resources/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" alt="StoreSwitch app icon" width="128" height="128">
+	<h1 >StoreSwitch · Switch App Store Accounts</h1>
+	<p >
+  <a href="README.md">简体中文</a>·<strong>English</strong>
+	</p>
+</div>
 StoreSwitch is a macOS menu bar app that lets you save multiple Apple Accounts and helps you switch between them in the Mac App Store. It supports macOS 14 and later.
 
 ## Install

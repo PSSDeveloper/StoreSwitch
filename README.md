@@ -1,8 +1,11 @@
-<img src="Resources/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" alt="StoreSwitch 应用图标" width="128" height="128">
+<div align="center">
+	<img src="Resources/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" alt="StoreSwitch 应用图标" width="128" height="128">
+	<h1> StoreSwitch · App Store 账号切换</h1>
+	<p >
+  <strong>简体中文</strong> · <a href="README.en.md">English</a>
+	</p>
+</div>
 
-# StoreSwitch · App Store 账号切换
-
-**简体中文** · [English](README.en.md)
 
 StoreSwitch 是一款 macOS 菜单栏应用，可保存多个 Apple 账户，并协助你在 Mac 的 App Store 中切换账号。支持 macOS 14 及以上版本。
 
