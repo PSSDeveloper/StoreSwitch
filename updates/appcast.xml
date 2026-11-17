@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>StoreSwitch</title>
+        <item>
+            <title>1.0.0</title>
+            <pubDate>Tue, 17 Nov 2026 10:04:21 +0800</pubDate>
+            <sparkle:version>1</sparkle:version>
+            <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/PSSDeveloper/StoreSwitch/releases/download/v1.0.0/StoreSwitch-1.0.0.dmg" length="3496342" type="application/octet-stream" sparkle:edSignature="AAsyYeLbC2r3phQuno9Q33iT6q1EVZlff0L289dqIdBmkk5xur3nkRMM7LZJcdZ8BjvY72HnAyT5ib913ZpCBg=="/>
+        </item>
+    </channel>
+</rss>
