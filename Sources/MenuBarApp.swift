@@ -29,7 +29,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
     private var aboutWindow: NSWindow?
     private var updaterController: SPUStandardUpdaterController?
     private var menuIsOpen = false
-    private lazy var automation = AppStoreAutomation { [weak self] in self?.append($0) }
+    private lazy var automation = AppStoreAutomation { [weak self] in self?.append($0, switchRelated: true) }
     private lazy var coordinator = AccountSwitchCoordinator(
         service: automation,
         confirmManualFallback: { [weak self] in self?.confirmManualFallback($0) == true },
@@ -39,8 +39,9 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
             } else {
                 self?.manualLoginWindow?.close()
             }
-        }
-    ) { [weak self] in self?.append([$0]) }
+        },
+        onSwitchEvent: { [weak self] in self?.recordSwitchEvent($0) }
+    ) { [weak self] in self?.append([$0], switchRelated: true) }
 
     static func main() {
         let application = NSApplication.shared
@@ -58,14 +59,16 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
             persistAccounts(saved.filter { StoreAccount.validEmail($0.email) && seen.insert($0.id).inserted })
         }
         logHistory.lines = Array((preferences.stringArray(forKey: "operationLog") ?? []).suffix(300))
+        if let saved = preferences.data(forKey: "recentSwitch") {
+            logHistory.recentSwitch = try? JSONDecoder().decode(LogHistory.SwitchRecord.self, from: saved)
+        }
         statusItem.button?.image = NSImage(named: "AccountSwitchTemplate")
         statusItem.menu = menu
         menu.delegate = self
         menu.autoenablesItems = false
         updateInterfaceLanguage()
         updateShortcut()
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
-        append(["StoreSwitch \(version) · \(ProcessInfo.processInfo.operatingSystemVersionString)"])
+        append([logEnvironment])
         // Xcode can launch the executable directly. Refresh the app bundle's registration
         // so macOS can look up its icon by bundle identifier.
         let registration = LSRegisterURL(Bundle.main.bundleURL as CFURL, true)
@@ -148,14 +151,15 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
                 item.toolTip = target.email
                 item.setAccessibilityLabel(tr(.init("menu.target", defaultValue: "目标 · \(target.email)")))
             }
-            menu.addItem(.separator())
-        } else if let state = coordinator.storeState {
-            add(tr(.init("menu.lastCheck", defaultValue: "上次检查 · \(tr(state.summary))"))).toolTip = tr(state.details)
-            menu.addItem(.separator())
-        } else if let error = coordinator.checkError {
-            add(tr(.init("menu.checkFailed", defaultValue: "上次检查失败"))).toolTip = tr(error)
-            menu.addItem(.separator())
+        } else {
+            if let record = logHistory.recentSwitch { addRecentSwitchSummary(record) }
+            if let state = coordinator.storeState {
+                add(tr(.init("menu.lastCheck", defaultValue: "上次检查 · \(tr(state.summary))"))).toolTip = tr(state.details)
+            } else if let error = coordinator.checkError {
+                add(tr(.init("menu.checkFailed", defaultValue: "上次检查失败"))).toolTip = tr(error)
+            }
         }
+        if !menu.items.isEmpty { menu.addItem(.separator()) }
 
         if accounts.isEmpty {
             add(tr(.init("menu.addAccount", defaultValue: "添加账号…")), #selector(showAccounts),
@@ -224,6 +228,26 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
         add(tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), #selector(showAbout), enabled: !step.isWorking)
         menu.addItem(.separator())
         add(tr(.init("menu.quit", defaultValue: "退出 StoreSwitch")), #selector(quit), key: "q", enabled: !step.isWorking && !savingPassword)
+    }
+
+    private func addRecentSwitchSummary(_ record: LogHistory.SwitchRecord) {
+        let result: LocalizedStringResource
+        switch record.completion?.outcome {
+        case .signInDetected: result = .init("switch.result.signInDetected", defaultValue: "检测到已登录")
+        case .ended: result = .init("state.cancelled", defaultValue: "切换已结束")
+        case nil: result = .init("switch.result.interrupted", defaultValue: "切换中断")
+        }
+        let language = AppLanguage.current
+        let date = (record.completion?.date ?? record.startedAt)
+            .formatted(.dateTime.month().day().hour().minute().locale(language.locale))
+        let status = language.text(result)
+        // App Store exposes session status here, so label the address as the historical target.
+        let label = "\(record.region.flag) \(shortEmail(record.email))"
+        let item = add(language.text(.init("menu.lastSwitch", defaultValue: "上次切换目标 · \(label) · \(date) · \(status)")))
+        let fullLabel = "\(record.region.title(in: language)) \(record.email)"
+        let detail = language.text(.init("menu.lastSwitch", defaultValue: "上次切换目标 · \(fullLabel) · \(date) · \(status)"))
+        item.toolTip = detail
+        item.setAccessibilityLabel(detail)
     }
 
     private func accountTitle(_ account: StoreAccount, address: String) -> String {
@@ -410,7 +434,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
 
     @objc private func openStore() {
         Task {
-            do { _ = try await automation.openStore() }
+            do { _ = try await automation.openStore { self.append($0) } }
             catch { showMessage(tr(.init("store.openFailed", defaultValue: "无法打开 App Store")), (error as? StoreAutomationError).map { tr($0.message) } ?? "") }
         }
     }
@@ -590,30 +614,64 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
             logWindow.makeKeyAndOrderFront(nil)
             return
         }
-        logWindow = showWindow(tr(.init("window.log", defaultValue: "StoreSwitch 操作日志")), content: OperationLogView(history: logHistory) { [weak self] in
-            self?.exportLog()
+        let view = OperationLogView(history: logHistory, export: { [weak self] in
+            guard let self else { return }
+            self.exportLog([self.logEnvironment] + self.logHistory.lines, filename: "StoreSwitch.log")
+        }, exportRecentSwitch: { [weak self] in
+            guard let self, let record = self.logHistory.recentSwitch else { return }
+            self.exportLog([record.environment] + record.lines, filename: "StoreSwitch-Latest-Switch.log")
         })
+        logWindow = showWindow(tr(.init("window.log", defaultValue: "StoreSwitch 操作日志")), content: view)
     }
 
-    private func exportLog() {
-        guard let logWindow else { return }
+    private func exportLog(_ lines: [String], filename: String) {
+        guard let logWindow, logWindow.attachedSheet == nil else { return }
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "StoreSwitch.log"
+        panel.nameFieldStringValue = filename
+        // Capture the selection when opening the sheet. A switch can progress while it is open.
         panel.beginSheetModal(for: logWindow) { [weak self] result in
             guard result == .OK, let self, let url = panel.url else { return }
             do {
-                try (self.logHistory.lines.joined(separator: "\n") + "\n").write(to: url, atomically: true, encoding: .utf8)
+                try (lines.joined(separator: "\n") + "\n").write(to: url, atomically: true, encoding: .utf8)
             } catch {
                 self.showMessage(tr(.init("log.exportFailed", defaultValue: "无法保存日志")), tr(.init("log.exportFailedDetails", defaultValue: "请检查目标位置后再试。")))
             }
         }
     }
 
-    private func append(_ messages: [String]) {
+    private var logEnvironment: String {
+        "StoreSwitch \(appVersion) · \(ProcessInfo.processInfo.operatingSystemVersionString)"
+    }
+
+    private func recordSwitchEvent(_ event: AccountSwitchCoordinator.SwitchEvent) {
+        switch event {
+        case .started(let account):
+            logHistory.recentSwitch = .init(email: account.email, region: account.region, startedAt: Date(), environment: logEnvironment)
+            logHistory.isRecordingSwitch = true
+        case .finished(let outcome):
+            logHistory.recentSwitch?.completion = .init(outcome: outcome, date: Date())
+            logHistory.isRecordingSwitch = false
+        }
+        persistRecentSwitch()
+    }
+
+    private func persistRecentSwitch() {
+        guard let record = logHistory.recentSwitch, let data = try? JSONEncoder().encode(record) else { return }
+        preferences.set(data, forKey: "recentSwitch")
+    }
+
+    private func append(_ messages: [String], switchRelated: Bool = false) {
         guard !messages.isEmpty else { return }
         let now = clock.string(from: Date())
-        logHistory.lines = Array((logHistory.lines + messages.map { "\(now)  \($0)" }).suffix(300))
+        let lines = messages.map { "\(now)  \($0)" }
+        logHistory.lines = Array((logHistory.lines + lines).suffix(300))
         preferences.set(logHistory.lines, forKey: "operationLog")
+        // Keep the latest switch independently of the rolling general log. Restored records are read-only.
+        if switchRelated, logHistory.isRecordingSwitch, var record = logHistory.recentSwitch {
+            record.lines = Array((record.lines + lines).suffix(300))
+            logHistory.recentSwitch = record
+            persistRecentSwitch()
+        }
     }
 
     private func showWindow<V: View>(_ title: String, activate: Bool = true, content: V) -> NSWindow {
@@ -661,6 +719,15 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
         }
     }
 
+    private var appVersion: String {
+        let bundle = Bundle.main
+        let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? tr(.init("common.unknown", defaultValue: "未知"))
+        if let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String, !build.isEmpty {
+            return "\(version)(\(build))"
+        }
+        return version
+    }
+
     @objc private func showAbout() {
         guard !coordinator.step.isWorking, NSApp.modalWindow == nil else { return }
         if let aboutWindow, aboutWindow.isVisible {
@@ -669,8 +736,7 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
             return
         }
         let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "StoreSwitch"
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? tr(.init("common.unknown", defaultValue: "未知"))
-        aboutWindow = showWindow(tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), content: AboutView(name: name, version: version) { [weak self] in
+        aboutWindow = showWindow(tr(.init("menu.about", defaultValue: "关于 StoreSwitch")), content: AboutView(name: name, version: appVersion) { [weak self] in
             self?.showLog()
         })
     }
@@ -773,6 +839,11 @@ final class MenuBarApp: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuI
 
 private struct AboutView: View {
     @AppStorage(AppLanguage.preferenceKey) private var language: AppLanguage = .preferred
+#if DEBUG
+    private let showsDiagnosticLog = true
+#else
+    @State private var showsDiagnosticLog = false
+#endif
     let name: String
     let version: String
     let showLog: () -> Void
@@ -784,15 +855,23 @@ private struct AboutView: View {
                 .interpolation(.high)
                 .frame(width: 72, height: 72)
                 .accessibilityHidden(true)
+#if !DEBUG
+                .contentShape(Rectangle())
+                .onTapGesture(count: 5) {
+                    showsDiagnosticLog = true
+                }
+#endif
             Text(name).font(.title2.bold())
             Text(language.text(.init("about.version", defaultValue: "版本 \(version)"))).foregroundStyle(.secondary)
             Text(language.text(.init("about.description", defaultValue: "在 macOS 菜单栏快速切换 App Store 账号。")))
                 .multilineTextAlignment(.center)
                 .padding(.top, 6)
-            Button(language.text(.init("about.diagnosticLog", defaultValue: "诊断日志")), action: showLog)
-                .buttonStyle(.link)
-                .font(.callout)
-                .padding(.top, 4)
+            if showsDiagnosticLog {
+                Button(language.text(.init("about.diagnosticLog", defaultValue: "诊断日志")), action: showLog)
+                    .buttonStyle(.link)
+                    .font(.callout)
+                    .padding(.top, 4)
+            }
         }
         .padding(28)
         .frame(width: 360)
@@ -828,13 +907,31 @@ private struct LoginStatusView: View {
 }
 
 private final class LogHistory: ObservableObject {
+    struct SwitchRecord: Codable {
+        struct Completion: Codable {
+            let outcome: AccountSwitchCoordinator.Outcome
+            let date: Date
+        }
+
+        // The target is for the local menu. Export only the environment and diagnostic lines.
+        let email: String
+        let region: StoreRegion
+        let startedAt: Date
+        let environment: String
+        var completion: Completion?
+        var lines: [String] = []
+    }
+
     @Published var lines: [String] = []
+    @Published var recentSwitch: SwitchRecord?
+    var isRecordingSwitch = false
 }
 
 private struct OperationLogView: View {
     @AppStorage(AppLanguage.preferenceKey) private var language: AppLanguage = .preferred
     @ObservedObject var history: LogHistory
     let export: () -> Void
+    let exportRecentSwitch: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -842,6 +939,8 @@ private struct OperationLogView: View {
                 Text(language.text(.init("log.count", defaultValue: "最近 \(history.lines.count) 条 · UTC")))
                     .foregroundStyle(.secondary)
                 Spacer()
+                Button(language.text(.init("log.exportRecentSwitch", defaultValue: "导出最近一次切换…")), action: exportRecentSwitch)
+                    .disabled(history.recentSwitch == nil)
                 Button(language.text(.init("log.export", defaultValue: "导出日志…")), action: export)
             }
             ScrollViewReader { scroll in

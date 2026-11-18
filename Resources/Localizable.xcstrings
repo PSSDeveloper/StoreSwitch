@@ -2018,6 +2018,22 @@
         }
       }
     },
+    "log.exportRecentSwitch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Latest Switch…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出最近一次切换…"
+          }
+        }
+      }
+    },
     "log.keychainFailed" : {
       "localizations" : {
         "en" : {
@@ -2590,6 +2606,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上次检查 · %@"
+          }
+        }
+      }
+    },
+    "menu.lastSwitch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Switch Target · %1$@ · %2$@ · %3$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次切换目标 · %1$@ · %2$@ · %3$@"
           }
         }
       }
@@ -3775,6 +3807,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目标账号：%@"
+          }
+        }
+      }
+    },
+    "switch.result.interrupted" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch interrupted"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换中断"
+          }
+        }
+      }
+    },
+    "switch.result.signInDetected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign-in detected"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检测到已登录"
           }
         }
       }

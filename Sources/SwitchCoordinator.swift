@@ -116,6 +116,15 @@ protocol StoreAutomating {
 
 @MainActor
 final class AccountSwitchCoordinator {
+    enum Outcome: String, Codable {
+        case signInDetected, ended
+    }
+
+    enum SwitchEvent: Equatable {
+        case started(StoreAccount)
+        case finished(Outcome)
+    }
+
     enum LoginCheck: Equatable {
         case state(StoreState)
         case unavailable(LocalizedStringResource)
@@ -199,6 +208,7 @@ final class AccountSwitchCoordinator {
     private let log: (String) -> Void
     private let confirmManualFallback: (StoreAccount) -> Bool
     private let updateManualLoginRecovery: (StoreAccount?) -> Void
+    private let onSwitchEvent: (SwitchEvent) -> Void
 
     private let observationInterval: Duration
     private var loginMonitor: Task<Void, Never>?
@@ -206,11 +216,13 @@ final class AccountSwitchCoordinator {
 
     init(service: any StoreAutomating, observationInterval: Duration = .seconds(2),
          confirmManualFallback: @escaping (StoreAccount) -> Bool = { _ in false },
-         updateManualLoginRecovery: @escaping (StoreAccount?) -> Void = { _ in }, log: @escaping (String) -> Void) {
+         updateManualLoginRecovery: @escaping (StoreAccount?) -> Void = { _ in },
+         onSwitchEvent: @escaping (SwitchEvent) -> Void = { _ in }, log: @escaping (String) -> Void) {
         self.service = service
         self.observationInterval = observationInterval
         self.confirmManualFallback = confirmManualFallback
         self.updateManualLoginRecovery = updateManualLoginRecovery
+        self.onSwitchEvent = onSwitchEvent
         self.log = log
     }
 
@@ -218,6 +230,8 @@ final class AccountSwitchCoordinator {
         guard step.canSelect, StoreAccount.validEmail(account.email) else { return }
         target = account
         choseManualLogin = false
+        // Emit the start before writing any diagnostics. Retries stay within the same switch.
+        onSwitchEvent(.started(account))
         log(tr(.init("log.switchStarted", defaultValue: "开始切换 · 地区 \(account.region.title(in: .current))")))
         await checkBeforeSwitch(account, confirmExit: confirmExit)
     }
@@ -238,8 +252,7 @@ final class AccountSwitchCoordinator {
             if snapshot.state == .signedIn {
                 transition(.confirmExit)
                 guard confirmExit(account) else {
-                    target = nil
-                    transition(.cancelled)
+                    cancelSwitch()
                     return
                 }
             }
@@ -253,8 +266,7 @@ final class AccountSwitchCoordinator {
                 }
                 transition(.confirmManualFallback)
                 guard confirmManualFallback(account) else {
-                    target = nil
-                    transition(.cancelled)
+                    cancelSwitch()
                     return
                 }
                 choseManualLogin = true
@@ -344,25 +356,30 @@ final class AccountSwitchCoordinator {
         do {
             let snapshot = try await inspect(activate: false)
             result = .state(snapshot.state)
-            if pendingLogin && snapshot.state == .signedIn {
-                finishLogin()
-            } else {
+            if !pendingLogin || snapshot.state != .signedIn {
                 step = previous
             }
         } catch {
             result = .unavailable(message(for: error))
             step = previous
         }
+        // Include the manual check result before closing the switch's diagnostic record.
         log(tr(.init("log.checkResult", defaultValue: "检查结果 · \(tr(result.message))")))
+        if pendingLogin && result == .state(.signedIn) { finishLogin() }
         return result
     }
 
     func end() {
         guard !step.isWorking, !step.canSelect else { return }
         if step == .needsManualLogin { updateManualLoginRecovery(nil) }
+        cancelSwitch()
+    }
+
+    private func cancelSwitch() {
         stopMonitoringLogin()
         target = nil
         transition(.cancelled)
+        onSwitchEvent(.finished(.ended))
     }
 
     private func savedPassword(for account: StoreAccount) async throws -> String? {
@@ -431,6 +448,7 @@ final class AccountSwitchCoordinator {
         checkError = nil
         log(tr(.init("log.switchFinished", defaultValue: "检测到 App Store 已登录 · 本次切换结束")))
         transition(.idle)
+        onSwitchEvent(.finished(.signInDetected))
         updateManualLoginRecovery(nil)
     }
 

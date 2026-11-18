@@ -100,7 +100,8 @@ enum CoordinatorChecks {
 
         do {
             let store = FakeStore([.signedIn])
-            let flow = AccountSwitchCoordinator(service: store) { _ in }
+            var events: [AccountSwitchCoordinator.SwitchEvent] = []
+            let flow = AccountSwitchCoordinator(service: store, onSwitchEvent: { events.append($0) }) { _ in }
             var confirmedTarget = false
             var automatic = account
             automatic.passwordID = UUID()
@@ -110,6 +111,8 @@ enum CoordinatorChecks {
             }
             check("cancelling confirmation never reads Keychain, signs out, or prepares login",
                   confirmedTarget && flow.step == .cancelled && store.calls == [inspect])
+            check("cancelling confirmation records a switch that ended without a sign-in",
+                  events == [.started(automatic), .finished(.ended)])
         }
 
         do {
@@ -141,7 +144,12 @@ enum CoordinatorChecks {
         do {
             let store = FakeStore([.signedOut, .signedOut, .signedIn], preparation: .writeUncertain)
             var log: [String] = []
-            let flow = AccountSwitchCoordinator(service: store) { log.append($0) }
+            var events: [AccountSwitchCoordinator.SwitchEvent] = []
+            var logCountsAtEvents: [Int] = []
+            let flow = AccountSwitchCoordinator(service: store, onSwitchEvent: {
+                events.append($0)
+                logCountsAtEvents.append(log.count)
+            }) { log.append($0) }
             var asked = false
             await flow.start(account) { _ in asked = true; return true }
             check("signed-out path skips exit; uncertain write waits for the user",
@@ -154,15 +162,19 @@ enum CoordinatorChecks {
             check("a manual check detects login and clears the pending switch",
                   result == .state(.signedIn) && store.calls.last == .inspect(activate: false)
                       && flow.step == .idle && flow.target == nil && !log.joined().contains(account.email))
+            check("retries use one switch event pair that brackets all diagnostics, including the manual check result",
+                  events == [.started(account), .finished(.signInDetected)] && logCountsAtEvents == [0, log.count])
         }
 
         do {
             let store = FakeStore([.signedIn])
-            let flow = AccountSwitchCoordinator(service: store) { _ in }
+            var events: [AccountSwitchCoordinator.SwitchEvent] = []
+            let flow = AccountSwitchCoordinator(service: store, onSwitchEvent: { events.append($0) }) { _ in }
             let result = await flow.checkLogin()
             check("standalone check reads the session without activating or mutating the store",
                   result == .state(.signedIn) && flow.storeState == .signedIn && flow.step == .idle && flow.target == nil
                       && store.calls == [.inspect(activate: false)])
+            check("standalone check does not create a switch record", events.isEmpty)
         }
 
         do {

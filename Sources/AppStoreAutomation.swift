@@ -14,11 +14,11 @@ final class AppStoreAutomation: StoreAutomating {
         try requirePermission()
         let app: NSRunningApplication
         if activate {
-            app = try await openStore()
+            app = try await openStore(report: log)
         } else if let running = try runningStore() {
             app = running
         } else {
-            app = try await launchStore(activate: false)
+            app = try await launchStore(activate: false, report: log)
         }
         let pid = app.processIdentifier
         let state = await scan(pid: pid) { $0.sessionState() }
@@ -74,23 +74,23 @@ final class AppStoreAutomation: StoreAutomating {
         }
     }
 
-    func openStore() async throws -> NSRunningApplication {
-        let app = try await launchStore(activate: true)
+    func openStore(report: ([String]) -> Void) async throws -> NSRunningApplication {
+        let app = try await launchStore(activate: true, report: report)
         for _ in 0..<16 {
             if NSWorkspace.shared.frontmostApplication?.processIdentifier == app.processIdentifier { return app }
             if app.isTerminated { break }
             try await Task.sleep(for: .milliseconds(100))
         }
-        log([tr(.init("log.storeNotFrontmost", defaultValue: "App Store 未成为前台"))])
+        report([tr(.init("log.storeNotFrontmost", defaultValue: "App Store 未成为前台"))])
         throw StoreAutomationError.notFrontmost
     }
 
-    private func launchStore(activate: Bool) async throws -> NSRunningApplication {
+    private func launchStore(activate: Bool, report: ([String]) -> Void) async throws -> NSRunningApplication {
         let config = NSWorkspace.OpenConfiguration()
         config.activates = activate
         guard let app = try? await NSWorkspace.shared.openApplication(at: storeURL, configuration: config),
               isSystemStore(app) else {
-            log([tr(.init("log.storeLaunchFailed", defaultValue: "无法打开系统 App Store"))])
+            report([tr(.init("log.storeLaunchFailed", defaultValue: "无法打开系统 App Store"))])
             throw StoreAutomationError.unavailable
         }
         return app
@@ -101,7 +101,7 @@ final class AppStoreAutomation: StoreAutomating {
         guard let app = NSRunningApplication(processIdentifier: pid), isSystemStore(app) else {
             throw StoreAutomationError.processChanged
         }
-        guard try await openStore().processIdentifier == pid else { throw StoreAutomationError.processChanged }
+        guard try await openStore(report: log).processIdentifier == pid else { throw StoreAutomationError.processChanged }
     }
 
     private func requirePermission() throws {
